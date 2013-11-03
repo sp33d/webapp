@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html>
+    
+    <head>
+        <title>Customers List | {{sconf.site_title}}</title>
+        <!-- Bootstrap -->
+        <link href="{{ STATIC_URL }}bootstrap/css/bootstrap.min.css" rel="stylesheet" media="screen">
+        <link href="{{ STATIC_URL }}bootstrap/css/bootstrap-responsive.min.css" rel="stylesheet" media="screen">
+        <link href="{{ STATIC_URL }}assets/styles.css" rel="stylesheet" media="screen">
+        <link href="{{ STATIC_URL }}assets/DT_bootstrap.css" rel="stylesheet" media="screen">
+        <link href="{{ STATIC_URL }}vendors/jGrowl/jquery.jgrowl.css" rel="stylesheet" media="screen">
+        <!--[if lte IE 8]><script language="javascript" type="text/javascript" src="{{ STATIC_URL }}vendors/flot/excanvas.min.js"></script><![endif]-->
+        <!-- HTML5 shim, for IE6-8 support of HTML5 elements -->
+        <!--[if lt IE 9]>
+            <script src="http://html5shim.googlecode.com/svn/trunk/html5.js"></script>
+        <![endif]-->
+        <script src="{{ STATIC_URL }}vendors/modernizr-2.6.2-respond-1.1.0.min.js"></script>
+    </head>
+    
+    <body>
+        <div class="navbar navbar-fixed-top">
+            <div class="navbar-inner">
+                <div class="container-fluid">
+                  {% include "topbar.html" %}
+                </div>
+            </div>
+        </div>
+        <div class="container-fluid">
+            <div class="row-fluid">
+                {% include "sidebar.html" %}
+                <!--/span-->
+                <div class="span9" id="content">
+                    <!-- Locator bar-->
+                    <div class="row-fluid">
+                      <div class="navbar">
+                        <div class="navbar-inner">
+                            <ul class="breadcrumb">
+                                <i class="icon-chevron-left hide-sidebar"><a href='#' title="Hide Sidebar" rel='tooltip'>&nbsp;</a></i>
+                                <i class="icon-chevron-right show-sidebar" style="display:none;">
+                                  <a href='#' title="Show Sidebar" rel='tooltip'>&nbsp;</a>
+                                </i>
+                                <li>
+                                  <a href="{% url 'dashboard.views.home' %}">Dashboard</a> <span class="divider">/</span>
+                                </li>
+                                <li class="active">Customer List</li>
+                            </ul>
+                        </div>
+                      </div>
+                    </div>
+                    <!-- Locator bar--> 
+                     <div class="row-fluid">
+                        <!-- block -->
+                        <div class="block">
+                            <div class="navbar navbar-inner block-header">
+                                <div class="muted pull-left">Customers</div>
+                            </div>
+                            <div class="block-content collapse in">
+                                <div class="span12">
+  				    <table cellpadding="0" cellspacing="0" border="0" class="table table-striped table-bordered" id="example">
+					<thead>
+					    <tr>
+					        <th>Login Name</th>
+						<th>Name</th>
+						<th>City</th>
+						<th>Email Address</th>
+						<th>Mobile Number</th>
+						<th>Role</th>
+						<th>Valid Till</th>
+						<th>OK</th>
+                                                <th><i class="icon-wrench"></i></th>
+					    </tr>
+					</thead>
+					<tbody>
+                                            {% for cust in custlist %}
+					    <tr {% if cust.dirty %} class="error" {% endif %}>
+                                                <td>{{ cust.login_name }}</td> 
+                                                <td>{{ cust.name }}</td> 
+                                                <td>{{ cust.city }}</td> 
+                                                <td>{{ cust.email_addr }}</td> 
+                                                <td>{{ cust.mobile_no }}</td> 
+                                                <td>{{ cust.role }}</td> 
+                                                <td>{{ cust.validity_till }}</td> 
+                                                <td>
+                                                    {% if cust.dirty %}
+                                                        <img src="{{ STATIC_URL }}/images/icon-no.gif" />
+                                                    {% else %}
+                                                        <img src="{{ STATIC_URL }}/images/icon-yes.gif" />
+                                                    {% endif %}
+                                                </td>
+                                                <td id="action_{{cust.id}}">
+                                                    {% if cust.dirty %}
+                                                        <button class="btn btn-success tooltip-top" id="recycle_customer"
+                                                            data-original-title="Restore/Recycle customer."
+                                                            onclick="recycleCustomer('{{cust.login_name}}', 'action_{{cust.id}}')">
+                                                            &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+                                                            <i class="icon-repeat"></i>
+                                                            &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</button>
+                                                    {% else %}
+                                                    <button class="btn btn-mini tooltip-top" id="show_customer_details"
+                                                        data-original-title="Show details." 
+                                                        onclick="showCustomerDetails('{{cust.login_name}}', 'action_{{cust.id}}')">
+                                                        <i class="icon-share"></i></button>
+                                                    <button class="btn btn-mini btn-primary tooltip-top" id="edit_customer_details"
+                                                        data-original-title="Edit details." 
+                                                        onclick="editCustomerDetails('{{cust.login_name}}', 'action_{{cust.id}}')">
+                                                        <i class="icon-pencil"></i></button>
+                                                    <button class="btn btn-mini btn-danger tooltip-top" id="remove_device"
+                                                        data-original-title="Remove." 
+                                                        onclick="removeCustomer('{{cust.login_name}}', 'action_{{cust.id}}')">
+                                                        <i class="icon-remove-circle"></i></button>
+                                                    {% endif %}
+                                                </td> 
+		    			    </tr>
+                                            {% endfor %}
+					</tbody>
+				    </table>
+                                </div>
+                            </div>
+                        </div>
+                        <!-- /block -->
+                    </div>
+
+
+                </div>
+            </div>
+            <hr>
+            <footer>
+                <p>{{ sconf.site_footer }}</p>
+            </footer>
+        </div>
+        <!--/.fluid-container-->
+
+        <script src="{{ STATIC_URL }}vendors/jquery-1.9.1.js"></script>
+        <script src="{{ STATIC_URL }}bootstrap/js/bootstrap.min.js"></script>
+        <script src="{{ STATIC_URL }}vendors/datatables/js/jquery.dataTables.min.js"></script>
+        <script src="{{ STATIC_URL }}assets/scripts.js"></script>
+        <script src="{{ STATIC_URL }}assets/DT_bootstrap.js"></script>
+        <!-- Tree Scripts -->
+        <link rel="stylesheet" href="{{ STATIC_URL }}tree/css/zTreeStyle/zTreeStyle.css" type="text/css">
+        <script type="text/javascript" src="{{ STATIC_URL }}tree/js/jquery.ztree.core-3.5.js"></script>
+        <script type="text/javascript" src="{{ STATIC_URL }}tree/js/jquery.ztree.excheck-3.5.js"></script>
+        <!--
+        <script type="text/javascript" src="{{ STATIC_URL }}tree/js/jquery.ztree.exedit-3.5.js"></script>
+        -->
+        <script type="text/javascript" src="{{ STATIC_URL }}dashboard/customer-tree.js"></script>
+        <!-- Tree Scripts --> 
+        <script type="text/javascript" src="{{ STATIC_URL }}dashboard/customer-list.js"></script>
+        <script>
+        $(function() {
+            
+        });
+        </script>
+    </body>
+
+</html>

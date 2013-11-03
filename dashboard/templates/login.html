@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Login Page | {{ sconf.site_title }}</title>
+    <!-- Bootstrap -->
+    <link href="{{ STATIC_URL }}bootstrap/css/bootstrap.min.css" rel="stylesheet" media="screen">
+    <link href="{{ STATIC_URL }}bootstrap/css/bootstrap-responsive.min.css" rel="stylesheet" media="screen">
+    <link href="{{ STATIC_URL }}assets/styles.css" rel="stylesheet" media="screen">
+     <!-- HTML5 shim, for IE6-8 support of HTML5 elements -->
+    <!--[if lt IE 9]>
+      <script src="http://html5shim.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+    <script src="{{ STATIC_URL }}vendors/modernizr-2.6.2-respond-1.1.0.min.js"></script>
+  </head>
+  <body id="login">
+    <div class="container">
+
+      <form class="form-signin" method="post" action="">
+        {% csrf_token %}
+        <h2 class="form-signin-heading">Please enter the credentials</h2>
+        {% if form.non_field_errors %}
+        <span style="color:red">
+            {{ form.non_field_errors }}
+        </span>
+        {% endif %}
+        <input type="text" class="input-block-level" placeholder="Login name" name="login_name" id="id_login_name">
+        {% if form.login_name.errors %}
+        <ul style="color:red">
+            {% for error in form.login_name.errors %}
+                <li>{{ error }}</li>
+            {% endfor %}
+        </ul>
+        {% endif %}
+        <input type="password" class="input-block-level" placeholder="Password" name="password" id="id_password">
+        {% if form.password.errors %}
+        <ul style="color:red">
+            {% for error in form.password.errors %}
+                <li>{{ error }}</li>
+            {% endfor %}
+        </ul>
+        {% endif %}
+        <button class="btn btn-large btn-primary" type="submit">Login</button>
+      </form>
+      <hr>
+            <footer>
+                <p>{{ sconf.site_footer }}</p>
+            </footer>  
+    </div> <!-- /container -->
+    <script src="{{ STATIC_URL }}vendors/jquery-1.9.1.min.js"></script>
+    <script src="{{ STATIC_URL }}bootstrap/js/bootstrap.min.js"></script>
+  </body>
+</html>

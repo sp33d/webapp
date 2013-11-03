@@ -1,0 +1,542 @@
+<!DOCTYPE html>
+<html>
+    
+    <head>
+        <title>Device Registration | {{ sconf.site_title }}</title>
+        <!-- Bootstrap -->
+        <link href="{{ STATIC_URL }}bootstrap/css/bootstrap.min.css" rel="stylesheet" media="screen">
+        <link href="{{ STATIC_URL }}bootstrap/css/bootstrap-responsive.min.css" rel="stylesheet" media="screen">
+        <link href="{{ STATIC_URL }}assets/styles.css" rel="stylesheet" media="screen">
+        <link href="{{ STATIC_URL }}vendors/jGrowl/jquery.jgrowl.css" rel="stylesheet" media="screen">
+        <!--[if lte IE 8]><script language="javascript" type="text/javascript" src="{{ STATIC_URL }}vendors/flot/excanvas.min.js"></script><![endif]-->
+        <!-- HTML5 shim, for IE6-8 support of HTML5 elements -->
+        <!--[if lt IE 9]>
+            <script src="http://html5shim.googlecode.com/svn/trunk/html5.js"></script>
+        <![endif]-->
+        <script src="{{ STATIC_URL }}vendors/modernizr-2.6.2-respond-1.1.0.min.js"></script>
+    </head>
+    
+    <body>
+        <div class="navbar navbar-fixed-top">
+            <div class="navbar-inner">
+                <div class="container-fluid">
+                    {% include "topbar.html" %}
+                </div>
+            </div>
+        </div>
+        <div class="container-fluid">
+            <div class="row-fluid">
+                {% include "sidebar.html" %}
+                <!--/span-->
+                <div class="span9" id="content">
+                    <!-- Locator bar-->
+                    <div class="row-fluid">
+                      <div class="navbar">
+                        <div class="navbar-inner">
+                            <ul class="breadcrumb">
+                                <i class="icon-chevron-left hide-sidebar"><a href='#' title="Hide Sidebar" rel='tooltip'>&nbsp;</a></i>
+                                <i class="icon-chevron-right show-sidebar" style="display:none;">
+                                  <a href='#' title="Show Sidebar" rel='tooltip'>&nbsp;</a>
+                                </i>
+                                <li>
+                                  <a href="{% url 'dashboard.views.home' %}">Dashboard</a> <span class="divider">/</span>    
+                                </li>
+                                <li class="active">Device Registration</li>
+                            </ul>
+                        </div>
+                      </div>
+                    </div>
+                    <!-- Locator bar-->
+                    <!-- Alert bar -->
+                    {% if saved %}
+                    <div class="alert alert-success">
+                        <button type="button" class="close" data-dismiss="alert">&times;</button>
+                        <h4>Success</h4>
+                        The operation completed successfully.
+                    </div>
+                    {% endif %}
+                    <!-- Alert bar -->
+                    <!-- wizard -->
+                    <div class="row-fluid section">
+                         <!-- block -->
+                        <div class="block">
+                            <div class="navbar navbar-inner block-header">
+                                <div class="muted pull-left">Device Registration</div>
+                            </div>
+                            <div class="block-content collapse in">
+                                <div class="span12">
+                                    {% if form.non_field_errors %}
+                                        <span style="color:red">
+                                        {{ form.non_field_errors }}
+                                        </span>
+                                    {% endif %}
+                                    <div id="rootwizard">
+                                        <div class="navbar">
+                                          <div class="navbar-inner">
+                                            <div class="container">
+                                        <ul>
+                                            <li><a href="#tab1" data-toggle="tab">Device Details</a></li>
+                                            <li><a href="#tab2" data-toggle="tab">Insurance Details</a></li>
+                                            <li><a href="#tab3" data-toggle="tab">Driver Details</a></li>
+                                            <li><a href="#tab4" data-toggle="tab">Contract Details</a></li>
+                                        </ul>
+                                         </div>
+                                          </div>
+                                        </div>
+                                        <div id="bar" class="progress progress-striped active">
+                                          <div class="bar"></div>
+                                        </div>
+                                        <div class="tab-content">
+                                            <div class="tab-pane" id="tab1">
+                                               <form class="form-horizontal" method="post" action="./" enctype="multipart/form-data" 
+                                                    name="device-reg-form" id="device-reg-form">
+                                                  {% csrf_token %}
+                                                  <fieldset>
+                                                    <div class="control-group {% if form.imei.errors %} error {% endif %}">
+                                                      <label class="control-label" for="focusedInput">IMEI/ID</label>
+                                                      <div class="controls">
+                                                        <input class="input-xlarge focused" id="id_imei" name="imei" type="text" value="{{ imei }}">
+                                                        {% if form.imei.errors %}
+                                                          <span class="help-inline">{{ form.imei.errors|join:", " }} </span>
+                                                        {% endif %}
+                                                      </div>
+                                                    </div>
+                                                    <div class="control-group {% if form.name.errors %} error {% endif %}">
+                                                      <label class="control-label" for="focusedInput">Vehicle Name</label>
+                                                      <div class="controls">
+                                                        <input class="input-xlarge focused" id="id_name" name="name" type="text" 
+                                                            value="{{ subscription_amt }}">
+                                                        {% if form.name.errors %}
+                                                          <span class="help-inline">{{ form.name.errors|join:", " }}</span>
+                                                        {% endif %}
+                                                      </div>
+                                                    </div>
+                                                    <div class="control-group {% if form.subscription_amt.errors %} error {% endif %}">
+                                                      <label class="control-label" for="focusedInput">Pricing (in Rs)</label>
+                                                      <div class="controls">
+                                                        <input class="input-xlarge focused" id="id_subscription_amt" name="subscription_amt"
+                                                            type="text" value="{{ subscription_amt }}">
+                                                        {% if form.name.errors %}
+                                                          <span class="help-inline">{{ form.subscription_amt.errors|join:", " }} </span>
+                                                        {% endif %}
+                                                      </div>
+                                                    </div>
+                                                    <div class="control-group {% if form.protocol.errors %} error {% endif %}">
+                                                      <label class="control-label" for="select01">Communication Protocol</label>
+                                                      <div class="controls">
+                                                        <select id="id_protocol" name="protocol" class="chzn-select">
+                                                            {% for value, text in form.protocol.field.choices %}
+                                                              <option value="{{value}}">{{text}}</option>
+                                                            {% endfor %}
+                                                        </select>
+                                                        {% if form.protocol.errors %}
+                                                          <span class="help-inline">{{ form.protocol.errors|join:", " }} </span>
+                                                        {% endif %}
+                                                      </div>
+                                                    </div>
+                                                    <div class="control-group {% if form.icon.errors %} error {% endif %}">
+                                                      <label class="control-label" for="select01">Show icon</label>
+                                                      <div class="controls">
+                                                        <select id="id_icon" name="icon" class="chzn-select">
+                                                            {% for value, text in form.icon.field.choices %}
+                                                              <option value="{{value}}">{{text}}</option>
+                                                            {% endfor %}
+                                                        </select>
+                                                        {% if form.icon.errors %}
+                                                          <span class="help-inline">{{ form.icon.errors|join:", " }} </span>
+                                                        {% endif %}
+                                                      </div>
+                                                    </div>
+                                                    <div class="control-group {% if form.imsi.errors %} error {% endif %}">
+                                                      <label class="control-label" for="focusedInput">IMSI/Mobile No</label>
+                                                      <div class="controls">
+                                                        <input class="input-xlarge focused" id="id_imsi" name="imsi"
+                                                            type="text" value="{{ imsi }}">
+                                                        {% if form.imsi.errors %}
+                                                          <span class="help-inline">{{ form.imsi.errors|join:", " }} </span>
+                                                        {% endif %}
+                                                      </div>
+                                                    </div>
+                                                    <div class="control-group {% if form.stock_st.errors %} error {% endif %}">
+                                                      <label class="control-label" for="select01">Stock Status</label>
+                                                      <div class="controls">
+                                                        <select id="id_stock_st" name="stock_st" class="chzn-select">
+                                                            {% for value, text in form.stock_st.field.choices %}
+                                                              <option value="{{value}}">{{text}}</option>
+                                                            {% endfor %}
+                                                        </select>
+                                                        {% if form.stock_st.errors %}
+                                                          <span class="help-inline">{{ form.stock_st.errors|join:", " }} </span>
+                                                        {% endif %}
+                                                      </div>
+                                                    </div>
+                                                   <div class="control-group {% if form.owner.errors %} error {% endif %}">
+                                                      <label class="control-label" for="focusedInput">Owner</label>
+                                                      <div class="controls">
+                                                        <select id="id_owner" name="owner" class="chzn-select">
+                                                            {% for value, text in form.owner.field.choices %}
+                                                              <option value="{{value}}">{{text}}</option>
+                                                            {% endfor %}
+                                                        </select>
+                                                        {% if form.owner.errors %}
+                                                          <span class="help-inline">{{ form.owner.errors|join:", " }} </span>
+                                                        {% endif %}
+                                                      </div>
+                                                    </div>
+                                                    <div class="control-group {% if form.tank_sz.errors %} error {% endif %}">
+                                                      <label class="control-label" for="focusedInput">Tank Size (in litres)</label>
+                                                      <div class="controls">
+                                                        <input class="input-xlarge focused" id="id_tank_sz" name="tank_sz"
+                                                            type="text" value="{{ tank_sz }}">
+                                                        {% if form.imsi.errors %}
+                                                          <span class="help-inline">{{ form.tank_sz.errors|join:", " }} </span>
+                                                        {% endif %}
+                                                      </div>
+                                                    </div>
+                                                    <div class="control-group {% if form.fuel_tank.errors %} error {% endif %}">
+                                                      <label class="control-label" for="focusedInput">Fule Tank Type</label>
+                                                      <div class="controls">
+                                                        <select id="id_fuel_tank" name="fuel_tank" class="chzn-select">
+                                                            {% for value, text in form.fuel_tank.field.choices %}
+                                                              <option value="{{value}}">{{text}}</option>
+                                                            {% endfor %}
+                                                        </select>
+                                                        {% if form.fuel_tank.errors %}
+                                                          <span class="help-inline">{{ form.fuel_tank.errors|join:", " }} </span>
+                                                        {% endif %}
+                                                      </div>
+                                                    </div>
+                                                    <div class="control-group {% if form.max_speed.errors %} error {% endif %}">
+                                                      <label class="control-label" for="focusedInput">Max Speed (for Alert)</label>
+                                                      <div class="controls">
+                                                        <input class="input-xlarge focused" id="id_max_speed" name="max_speed"
+                                                            type="text" value="{{ max_speed }}">
+                                                        {% if form.max_speed.errors %}
+                                                          <span class="help-inline">{{ form.max_speed.errors|join:", " }} </span>
+                                                        {% endif %}
+                                                      </div>
+                                                    </div>
+                                                    <div class="control-group {% if form.max_temp.errors %} error {% endif %}">
+                                                      <label class="control-label" for="focusedInput">Max Temp (in C for Alert)</label>
+                                                      <div class="controls">
+                                                        <input class="input-xlarge focused" id="id_max_temp" name="max_temp"
+                                                            type="text" value="{{ max_temp }}">
+                                                        {% if form.max_temp.errors %}
+                                                          <span class="help-inline">{{ form.max_temp.errors|join:", " }} </span>
+                                                        {% endif %}
+                                                      </div>
+                                                    </div> 
+                                                    <div class="control-group {% if form.lowest_fuel.errors %} error {% endif %}">
+                                                      <label class="control-label" for="focusedInput">Min Fuel (for Alert)</label>
+                                                      <div class="controls">
+                                                        <input class="input-xlarge focused" id="id_lowest_fuel" name="lowest_fuel"
+                                                            type="text" value="{{ lowest_fuel }}">
+                                                        {% if form.max_temp.errors %}
+                                                          <span class="help-inline">{{ form.lowest_fuel.errors|join:", " }} </span>
+                                                        {% endif %}
+                                                      </div>
+                                                    </div>
+                                                  </fieldset>
+                                                <!--/form-->
+                                            </div>
+                                            <div class="tab-pane" id="tab2">
+                                                <!--form class="form-horizontal"-->
+                                                  <fieldset class="form-horizontal">
+                                                    <div class="control-group {% if form.rc_number.errors %} error {% endif %}">
+                                                      <label class="control-label" for="focusedInput">RC Number</label>
+                                                      <div class="controls">
+                                                        <input class="input-xlarge focused" id="id_rc_number" name="rc_number" type="text" value="">
+                                                        {% if form.rc_number.errors %}
+                                                          <span class="help-inline">{{ form.rc_number.errors|join:", " }} </span>
+                                                        {% endif %}
+                                                      </div>
+                                                    </div>
+                                                    <div class="control-group {% if form.rc_date.errors %} error {% endif %}">
+                                                      <label class="control-label" for="focusedInput">RC Date</label>
+                                                      <div class="controls">
+                                                        <input class="datepicker" id="id_rc_date" name="rc_date" 
+                                                            type="text" value="">
+                                                        {% if form.rc_date.errors %}
+                                                          <span class="help-inline">{{ form.rc_date.errors|join:", " }} </span>
+                                                        {% endif %}
+                                                      </div>
+                                                    </div>
+                                                    <div class="control-group {% if form.insurance_number.errors %} error {% endif %}">
+                                                      <label class="control-label" for="focusedInput">Insurance Number</label>
+                                                      <div class="controls">
+                                                        <input class="input-xlarge focused" id="id_insurance_number" name="insurance_number"
+                                                             type="text" value="">
+                                                        {% if form.insurance_number.errors %}
+                                                          <span class="help-inline">{{ form.insurance_number.errors|join:", " }} </span>
+                                                        {% endif %}
+                                                      </div>
+                                                    </div>
+                                                    <div class="control-group {% if form.insurance_company.errors %} error {% endif %}">
+                                                      <label class="control-label" for="focusedInput">Insurance Company</label>
+                                                      <div class="controls">
+                                                        <input class="input-xlarge focused" id="id_insurance_company" name="insurance_company" 
+                                                            type="text" value="{{insurance_company}}">
+                                                        {% if form.insurance_company.errors %}
+                                                          <span class="help-inline">{{ form.insurance_company.errors|join:", " }} </span>
+                                                        {% endif %}
+                                                      </div>
+                                                    </div>
+                                                    <div class="control-group {% if form.rc_date.errors %} error {% endif %}">
+                                                      <label class="control-label" for="focusedInput">Insurance Date</label>
+                                                      <div class="controls">
+                                                        <input class="datepicker" id="id_insurance_date" name="insurance_date"
+                                                            type="text" value="{{ insurance_date }}">
+                                                        {% if form.insurance_date.errors %}
+                                                          <span class="help-inline">{{ form.insurance_date.errors|join:", " }} </span>
+                                                        {% endif %}
+                                                      </div>
+                                                    </div>
+                                                    <div class="control-group {% if form.insurance_due_date.errors %} error {% endif %}">
+                                                      <label class="control-label" for="focusedInput">Insurance Due Date</label>
+                                                      <div class="controls">
+                                                        <input class="datepicker" id="id_insurance_due_date" name="insurance_due_date"
+                                                            type="text" value="{{ insurance_due_date }}">
+                                                        {% if form.insurance_due_date.errors %}
+                                                          <span class="help-inline">{{ form.insurance_due_date.errors|join:", " }} </span>
+                                                        {% endif %}
+                                                      </div>
+                                                    </div>
+                                                    <div class="control-group {% if form.insurance_premium.errors %} error {% endif %}">
+                                                      <label class="control-label" for="focusedInput">Insurance Premium (in Rs)</label>
+                                                      <div class="controls">
+                                                        <input class="input-xlarge focused" id="id_insurance_premium" name="insurance_premium"
+                                                            type="text" value="{{insurance_premium}}">
+                                                        {% if form.insurance_premium.errors %}
+                                                          <span class="help-inline">{{ form.insurance_premium.errors|join:", " }} </span>
+                                                        {% endif %}
+                                                      </div>
+                                                    </div>
+                                                    <div class="control-group {% if form.servicing_due_date.errors %} error {% endif %}">
+                                                      <label class="control-label" for="focusedInput">Servicing Due Date</label>
+                                                      <div class="controls">
+                                                        <input class="datepicker" id="id_servicing_due_date" name="servicing_due_date"
+                                                            type="text" value="{{ servicing_due_date }}">
+                                                        {% if form.insurance_date.errors %}
+                                                          <span class="help-inline">{{ form.servicing_due_date.errors|join:", " }} </span>
+                                                        {% endif %}
+                                                      </div>
+                                                    </div>
+                                                    <div class="control-group {% if form.servicing_due_km.errors %} error {% endif %}">
+                                                      <label class="control-label" for="focusedInput">Servicing due after (in Km)</label>
+                                                      <div class="controls">
+                                                        <input class="input-xlarge focused" id="id_servicing_due_km" name="servicing_due_km"
+                                                            type="text" value="{{servicing_due_km}}">
+                                                        {% if form.servicing_due_km.errors %}
+                                                          <span class="help-inline">{{ form.servicing_due_km.errors|join:", " }} </span>
+                                                        {% endif %}
+                                                      </div>
+                                                    </div>
+                                                    <div class="control-group {% if form.odometer_reading.errors %} error {% endif %}">
+                                                      <label class="control-label" for="focusedInput">Odometer Reading (in Km)</label>
+                                                      <div class="controls">
+                                                        <input class="input-xlarge focused" id="id_odometer_reading" name="odometer_reading"
+                                                            type="text" value="{{odometer_reading}}">
+                                                        {% if form.odometer_reading.errors %}
+                                                          <span class="help-inline">{{ form.odometer_reading.errors|join:", " }} </span>
+                                                        {% endif %}
+                                                      </div>
+                                                    </div>
+                                                  </fieldset>
+                                                <!--/form-->
+                                            </div>
+                                            <div class="tab-pane" id="tab3">
+                                                <!--form class="form-horizontal"-->
+                                                  <fieldset class="form-horizontal">
+                                                    <div class="control-group {% if form.driver_dp.errors %} error {% endif %}">
+                                                      <label class="control-label" for="fileInput">Driver Picture</label>
+                                                      <div class="controls">
+                                                        <input class="input-file uniform_on" id="id_driver_dp" name="driver_dp" type="file">
+                                                        {% if form.driver_dp.errors %}
+                                                          <span class="help-inline">{{ form.driver_dp.errors|join:", " }} </span>
+                                                        {% endif %}
+                                                      </div>
+                                                    </div>
+                                                    <div class="control-group {% if form.driver_name.errors %} error {% endif %}">
+                                                      <label class="control-label" for="select01">Driver Name</label>
+                                                      <div class="controls">
+                                                        <input class="input-xlarge focused" id="id_driver_name" name="driver_name" 
+                                                            type="text" value="{{driver_name}}">
+                                                        {% if form.driver_name.errors %}
+                                                          <span class="help-inline">{{ form.driver_name.errors|join:", " }} </span>
+                                                        {% endif %}
+                                                      </div>
+                                                    </div>
+                                                    <div class="control-group {% if form.driver_addr.errors %} error {% endif %}">
+                                                      <label class="control-label" for="focusedInput">Driver Address</label>
+                                                      <div class="controls">
+                                                        <input class="input-xlarge focused" id="id_driver_addr" name="driver_addr" 
+                                                            type="text" value="{{driver_addr}}">
+                                                        {% if form.driver_addr.errors %}
+                                                          <span class="help-inline">{{ form.driver_addr.errors|join:", " }} </span>
+                                                        {% endif %}   
+                                                      </div>
+                                                    </div>
+                                                    <div class="control-group {% if form.driver_contact_no.errors %} error {% endif %}">
+                                                      <label class="control-label" for="focusedInput">Driver Contact No.</label>
+                                                      <div class="controls">
+                                                        <input class="input-xlarge focused" id="id_driver_contact_no" name="driver_contact_no" 
+                                                            type="text" value="{{driver_contact_no}}">
+                                                        {% if form.driver_contact_no.errors %}
+                                                          <span class="help-inline">{{ form.driver_contact_no.errors|join:", " }} </span>
+                                                        {% endif %}
+                                                      </div>
+                                                    </div>
+                                                    <div class="control-group {% if form.license_no.errors %} error {% endif %}">
+                                                      <label class="control-label" for="focusedInput">License No.</label>
+                                                      <div class="controls">
+                                                        <input class="input-xlarge focused" id="id_license_no" name="license_no"
+                                                            type="text" value="{{license_no}}">
+                                                        {% if form.license_no.errors %}
+                                                          <span class="help-inline">{{ form.license_no.errors|join:", " }} </span>
+                                                        {% endif %}
+                                                      </div>
+                                                    </div>
+                                                    <div class="control-group {% if form.license_exp_date.errors %} error {% endif %}">
+                                                      <label class="control-label" for="focusedInput">License Expiry Date</label>
+                                                      <div class="controls">
+                                                        <input type="text" class="datepicker" id="id_license_exp_date" 
+                                                            name="license_exp_date" value="{{license_exp_date}}">
+                                                        {% if form.license_exp_date.errors %}
+                                                          <span class="help-inline">{{ form.license_exp_date.errors|join:", " }} </span>
+                                                        {% endif %}
+                                                      </div>
+                                                    </div>
+                                                  </fieldset>
+                                                <!--/form-->
+                                              </div>
+                                              <div class="tab-pane" id="tab4">
+                                                <!--form class="form-horizontal"-->
+                                                  <fieldset class="form-horizontal">
+                                                    <div class="control-group {% if form.contract_company.errors %} error {% endif %}">
+                                                      <label class="control-label" for="fileInput">Contract Company</label>
+                                                      <div class="controls">
+                                                        <input class="input-xlarge focused" id="id_contract_company" name="contract_company"
+                                                            type="text" value="{{contract_company}}">
+                                                        {% if form.contract_company.errors %}
+                                                          <span class="help-inline">{{ form.contract_company.errors|join:", " }} </span>
+                                                        {% endif %}
+                                                      </div>
+                                                    </div>
+                                                    <div class="control-group {% if form.contract_amt.errors %} error {% endif %}">
+                                                      <label class="control-label" for="fileInput">Contract Amount</label>
+                                                      <div class="controls">
+                                                        <input class="input-xlarge focused" id="id_contract_amt" name="contract_amt"
+                                                            type="text" value="{{contract_amt}}">
+                                                        {% if form.contract_amt.errors %}
+                                                          <span class="help-inline">{{ form.contract_amt.errors|join:", " }} </span>
+                                                        {% endif %}
+                                                      </div>
+                                                    </div>
+                                                    <div class="control-group {% if form.contract_renewal_dt.errors %} error {% endif %}">
+                                                      <label class="control-label" for="focusedInput">Contract Renewal Date</label>
+                                                      <div class="controls">
+                                                        <input type="text" class="datepicker" id="id_contract_renewal_dt"
+                                                            name="contract_renewal_dt" value="{{contract_renewal_dt}}">
+                                                        {% if form.contract_renewal_dt.errors %}
+                                                          <span class="help-inline">{{ form.contract_renewal_dt.errors|join:", " }} </span>
+                                                        {% endif %}
+                                                      </div>
+                                                    </div>
+                                                    <div class="control-group {% if form.contract_date.errors %} error {% endif %}">
+                                                      <label class="control-label" for="focusedInput">Contract Date</label>
+                                                      <div class="controls">
+                                                        <input type="text" class="datepicker" id="id_contract_date"
+                                                            name="contract_date" value="{{contract_date}}">
+                                                        {% if form.contract_date.errors %}
+                                                          <span class="help-inline">{{ form.contract_date.errors|join:", " }}</span>
+                                                        {% endif %}
+                                                      </div>
+                                                    </div>
+                                                  </fieldset>
+                                                </form>
+                                            </div>
+                                            <ul class="pager wizard">
+                                                <li class="previous first" style="display:none;"><a href="javascript:void(0);">First</a></li>
+                                                <li class="previous"><a href="javascript:void(0);">Previous</a></li>
+                                                <li class="next last" style="display:none;"><a href="javascript:void(0);">Last</a></li>
+                                                <li class="next"><a href="javascript:void(0);">Next</a></li>
+                                                <li class="next finish" style="display:none;"><a href="javascript:;">Finish</a></li>
+                                            </ul>
+                                        </div>  
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <!-- /block -->
+                    </div>
+
+                </div>
+            </div>
+            <hr>
+            <footer>
+                <p>{{ sconf.site_footer }}</p>
+            </footer>
+        </div>
+        <!--/.fluid-container-->
+        <link href="{{ STATIC_URL }}vendors/datepicker.css" rel="stylesheet" media="screen">
+        <link href="{{ STATIC_URL }}vendors/uniform.default.css" rel="stylesheet" media="screen">
+        <link href="{{ STATIC_URL }}vendors/chosen.min.css" rel="stylesheet" media="screen">
+
+        <link href="{{ STATIC_URL }}vendors/wysiwyg/bootstrap-wysihtml5.css" rel="stylesheet" media="screen">
+
+        <script src="{{ STATIC_URL }}vendors/jquery-1.9.1.js"></script>
+        <script src="{{ STATIC_URL }}bootstrap/js/bootstrap.min.js"></script>
+        <script src="{{ STATIC_URL }}vendors/jquery.uniform.min.js"></script>
+        <script src="{{ STATIC_URL }}vendors/chosen.jquery.min.js"></script>
+        <script src="{{ STATIC_URL }}vendors/bootstrap-datepicker.js"></script>
+
+        <script src="{{ STATIC_URL }}vendors/wysiwyg/wysihtml5-0.3.0.js"></script>
+        <script src="{{ STATIC_URL }}vendors/wysiwyg/bootstrap-wysihtml5.js"></script>
+
+        <script src="{{ STATIC_URL }}vendors/wizard/jquery.bootstrap.wizard.min.js"></script>
+
+
+        <script src="{{ STATIC_URL }}assets/scripts.js"></script>
+
+        <!-- Tree Scripts -->
+        <link rel="stylesheet" href="{{ STATIC_URL }}tree/css/zTreeStyle/zTreeStyle.css" type="text/css">
+        <script type="text/javascript" src="{{ STATIC_URL }}tree/js/jquery.ztree.core-3.5.js"></script>
+        <script type="text/javascript" src="{{ STATIC_URL }}tree/js/jquery.ztree.excheck-3.5.js"></script>
+        <!--
+        <script type="text/javascript" src="{{ STATIC_URL }}tree/js/jquery.ztree.exedit-3.5.js"></script>
+        -->
+        <script type="text/javascript" src="{{ STATIC_URL }}dashboard/customer-tree.js"></script>
+        <!-- Tree Scripts -->
+ 
+        <script>
+        $(function() {
+            $(".datepicker").datepicker();
+            $(".uniform_on").uniform();
+            $(".chzn-select").chosen({width: "150px"});
+            $('.textarea').wysihtml5();
+            $('#rootwizard').bootstrapWizard({onTabShow: function(tab, navigation, index) {
+                var $total = navigation.find('li').length;
+                var $current = index+1;
+                var $percent = ($current/$total) * 100;
+                $('#rootwizard').find('.bar').css({width:$percent+'%'});
+                // If it's the last tab then hide the last button and show the finish instead
+                if($current >= $total) {
+                    $('#rootwizard').find('.pager .next').hide();
+                    $('#rootwizard').find('.pager .finish').show();
+                    $('#rootwizard').find('.pager .finish').removeClass('disabled');
+                } else {
+                    $('#rootwizard').find('.pager .next').show();
+                    $('#rootwizard').find('.pager .finish').hide();
+                }
+            }});
+            $('#rootwizard .finish').click(function() {
+                //alert('Finished!, Starting over!');
+                //$('#rootwizard').find("a[href*='tab1']").trigger('click');
+                //Submit the form
+                $('#device-reg-form').submit();
+            });
+        });
+        </script>
+    </body>
+
+</html>

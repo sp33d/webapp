@@ -1,0 +1,307 @@
+<!DOCTYPE html>
+<html>
+    
+    <head>
+        <title>Customer Registration | {{ sconf.site_title }}</title>
+        <!-- Bootstrap -->
+        <link href="{{ STATIC_URL }}bootstrap/css/bootstrap.min.css" rel="stylesheet" media="screen">
+        <link href="{{ STATIC_URL }}bootstrap/css/bootstrap-responsive.min.css" rel="stylesheet" media="screen">
+        <link href="{{ STATIC_URL }}assets/styles.css" rel="stylesheet" media="screen">
+        <link href="{{ STATIC_URL }}vendors/jGrowl/jquery.jgrowl.css" rel="stylesheet" media="screen">
+        <!--[if lte IE 8]><script language="javascript" type="text/javascript" src="{{ STATIC_URL }}vendors/flot/excanvas.min.js"></script><![endif]-->
+        <!-- HTML5 shim, for IE6-8 support of HTML5 elements -->
+        <!--[if lt IE 9]>
+            <script src="http://html5shim.googlecode.com/svn/trunk/html5.js"></script>
+        <![endif]-->
+        <script src="{{ STATIC_URL }}vendors/modernizr-2.6.2-respond-1.1.0.min.js"></script>
+    </head>
+    
+    <body>
+        <div class="navbar navbar-fixed-top">
+            <div class="navbar-inner">
+                <div class="container-fluid">
+                    {% include "topbar.html" %}
+                </div>
+            </div>
+        </div>
+        <div class="container-fluid">
+            <div class="row-fluid">
+                {% include "sidebar.html" %}
+                <!--/span-->
+                <div class="span9" id="content">
+                    <!-- Locator bar-->
+                    <div class="row-fluid">
+                      <div class="navbar">
+                        <div class="navbar-inner">
+                            <ul class="breadcrumb">
+                                <i class="icon-chevron-left hide-sidebar"><a href='#' title="Hide Sidebar" rel='tooltip'>&nbsp;</a></i>
+                                <i class="icon-chevron-right show-sidebar" style="display:none;">
+                                  <a href='#' title="Show Sidebar" rel='tooltip'>&nbsp;</a>
+                                </i>
+                                <li>
+                                  <a href="{% url 'dashboard.views.home' %}">Dashboard</a> <span class="divider">/</span>    
+                                </li>
+                                <li class="active">Customer Registration</li>
+                            </ul>
+                        </div>
+                      </div>
+                    </div>
+                    <!-- Locator bar-->
+                    <!-- Alert bar -->
+                    {% if saved %}
+                    <div class="alert alert-success">
+                        <button type="button" class="close" data-dismiss="alert">&times;</button>
+                        <h4>Success</h4>
+                        The operation completed successfully.
+                    </div>
+                    {% endif %}
+                    <!-- Alert bar -->
+                    <!-- wizard -->
+                    <div class="row-fluid section">
+                         <!-- block -->
+                        <div class="block">
+                            <div class="navbar navbar-inner block-header">
+                                <div class="muted pull-left">Customer Registration</div>
+                            </div>
+                            <div class="block-content collapse in">
+                                <div class="span12">
+                                    <div id="rootwizard">
+                                        <div class="navbar">
+                                          <div class="navbar-inner">
+                                            <div class="container">
+                                        <ul>
+                                            <li><a href="#tab1" data-toggle="tab">Access Details</a></li>
+                                            <li><a href="#tab2" data-toggle="tab">Personal Details</a></li>
+                                            <li><a href="#tab3" data-toggle="tab">Configuration</a></li>
+                                        </ul>
+                                         </div>
+                                          </div>
+                                        </div>
+                                        <div id="bar" class="progress progress-striped active">
+                                          <div class="bar"></div>
+                                        </div>
+                                        <div class="tab-content">
+                                            <div class="tab-pane" id="tab1">
+                                               <form class="form-horizontal" method="post" action="./" enctype="multipart/form-data" 
+                                                    name="customer-reg-form" id="customer-reg-form">
+                                                  {% csrf_token %}
+                                                  <fieldset>
+                                                    <div class="control-group {% if form.login_name.errors %} error {% endif %}">
+                                                      <label class="control-label" for="focusedInput">Login Name</label>
+                                                      <div class="controls">
+                                                        <input class="input-xlarge focused" id="id_login_name" name="login_name" type="text" value="">
+                                                        {% if form.login_name.errors %}
+                                                          <span class="help-inline">{{ form.login_name.errors|join:", " }} </span>
+                                                        {% endif %}
+                                                      </div>
+                                                    </div>
+                                                    <div class="control-group {% if form.login_name.errors %} error {% endif %}">
+                                                      <label class="control-label" for="focusedInput">Password</label>
+                                                      <div class="controls">
+                                                        <input class="input-xlarge focused" id="id_password" name="password" type="text" value="">
+                                                        {% if form.password.errors %}
+                                                          <span class="help-inline">{{ form.password.errors|join:", " }}</span>
+                                                        {% endif %}
+                                                      </div>
+                                                    </div>
+                                                    <div class="control-group {% if form.name.errors %} error {% endif %}">
+                                                      <label class="control-label" for="focusedInput">Name</label>
+                                                      <div class="controls">
+                                                        <input class="input-xlarge focused" id="id_name" name="name" type="text" value="">
+                                                        {% if form.name.errors %}
+                                                          <span class="help-inline">{{ form.name.errors|join:", " }} </span>
+                                                        {% endif %}
+                                                      </div>
+                                                    </div>
+                                                    <div class="control-group {% if form.display_pic.errors %} error {% endif %}">
+                                                      <label class="control-label" for="fileInput">Display Picture</label>
+                                                      <div class="controls">
+                                                        <input class="input-file uniform_on" id="id_display_pic" name="display_pic" type="file">
+                                                        {% if form.display_pic.errors %}
+                                                          <span class="help-inline">{{ form.display_pic.errors|join:", " }} </span>
+                                                        {% endif %}
+                                                      </div>
+                                                    </div>
+                                                  </fieldset>
+                                                <!--/form-->
+                                            </div>
+                                            <div class="tab-pane" id="tab2">
+                                                <!--form class="form-horizontal"-->
+                                                  <fieldset class="form-horizontal">
+                                                    <div class="control-group {% if form.address.errors %} error {% endif %}">
+                                                      <label class="control-label" for="focusedInput">Address</label>
+                                                      <div class="controls">
+                                                        <input class="input-xlarge focused" id="id_address" name="address" type="text" value="">
+                                                        {% if form.address.errors %}
+                                                          <span class="help-inline">{{ form.address.errors|join:", " }} </span>
+                                                        {% endif %}
+                                                      </div>
+                                                    </div>
+                                                    <div class="control-group {% if form.city.errors %} error {% endif %}">
+                                                      <label class="control-label" for="focusedInput">City</label>
+                                                      <div class="controls">
+                                                        <input class="input-xlarge focused" id="id_city" name="city" type="text" value="">
+                                                        {% if form.city.errors %}
+                                                          <span class="help-inline">{{ form.city.errors|join:", " }} </span>
+                                                        {% endif %}
+                                                      </div>
+                                                    </div>
+                                                    <div class="control-group {% if form.mobile_no.errors %} error {% endif %}">
+                                                      <label class="control-label" for="focusedInput">Phone Number</label>
+                                                      <div class="controls">
+                                                        <input class="input-xlarge focused" id="id_mobile_no" name="mobile_no" type="text" value="">
+                                                        {% if form.mobile_no.errors %}
+                                                          <span class="help-inline">{{ form.mobile_no.errors|join:", " }} </span>
+                                                        {% endif %}
+                                                      </div>
+                                                    </div>
+                                                    <div class="control-group {% if form.email_addr.errors %} error {% endif %}">
+                                                      <label class="control-label" for="focusedInput">Email Address</label>
+                                                      <div class="controls">
+                                                        <input class="input-xlarge focused" id="id_email_addr" name="email_addr" type="text" value="">
+                                                        {% if form.email_addr.errors %}
+                                                          <span class="help-inline">{{ form.email_addr.errors|join:", " }} </span>
+                                                        {% endif %}
+                                                      </div>
+                                                    </div>
+                                                  </fieldset>
+                                                <!--/form-->
+                                            </div>
+                                            <div class="tab-pane" id="tab3">
+                                                <!--form class="form-horizontal"-->
+                                                  <fieldset class="form-horizontal">
+                                                    <div class="control-group {% if form.alert_type.errors %} error {% endif %}">
+                                                      <label class="control-label" for="select01">Alert Type</label>
+                                                      <div class="controls">
+                                                        <select id="id_alert_type" name="alert_type" class="chzn-select">
+                                                            {% for value, text in form.alert_type.field.choices %}
+                                                              <option value="{{value}}">{{text}}</option>
+                                                            {% endfor %}
+                                                        </select>
+                                                        {% if form.alert_type.errors %}
+                                                          <span class="help-inline">{{ form.alert_type.errors|join:", " }} </span>
+                                                        {% endif %}
+                                                      </div>
+                                                    </div>
+                                                    <div class="control-group {% if form.role.errors %} error {% endif %}">
+                                                      <label class="control-label" for="focusedInput">Role</label>
+                                                      <div class="controls">
+                                                        <select id="id_role" name="role" class="chzn-select">
+                                                           {% for value, text in form.role.field.choices %}
+                                                              <option value="{{value}}">{{text}}</option>
+                                                           {% endfor %} 
+                                                        </select> 
+                                                        {% if form.role.errors %}
+                                                          <span class="help-inline">{{ form.role.errors|join:", " }} </span>
+                                                        {% endif %}   
+                                                      </div>
+                                                    </div>
+                                                    <div class="control-group {% if form.parent.errors %} error {% endif %}">
+                                                      <label class="control-label" for="focusedInput">Parent</label>
+                                                      <div class="controls">
+                                                        <select id="id_parent" name="parent" class="chzn-select">
+                                                          {% for value, text in form.parent.field.choices %}
+                                                            <option value="{{value}}">{{text}}</option>
+                                                          {% endfor %}
+                                                        </select>
+                                                        {% if form.parent.errors %}
+                                                          <span class="help-inline">{{ form.parent.errors|join:", " }} </span>
+                                                        {% endif %}
+                                                      </div>
+                                                    </div>
+                                                    <div class="control-group {% if form.validity_till.errors %} error {% endif %}">
+                                                      <label class="control-label" for="focusedInput">Valid Till</label>
+                                                      <div class="controls">
+                                                        <input type="text" class="datepicker" id="id_validity_till" 
+                                                            name="validity_till" value="">
+                                                        {% if form.validity_till.errors %}
+                                                          <span class="help-inline">{{ form.validity_till.errors|join:", " }} </span>
+                                                        {% endif %}
+                                                      </div>
+                                                    </div>
+                                                  </fieldset>
+                                                </form>
+                                            </div>
+                                            <ul class="pager wizard">
+                                                <li class="previous first" style="display:none;"><a href="javascript:void(0);">First</a></li>
+                                                <li class="previous"><a href="javascript:void(0);">Previous</a></li>
+                                                <li class="next last" style="display:none;"><a href="javascript:void(0);">Last</a></li>
+                                                <li class="next"><a href="javascript:void(0);">Next</a></li>
+                                                <li class="next finish" style="display:none;"><a href="javascript:;">Finish</a></li>
+                                            </ul>
+                                        </div>  
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <!-- /block -->
+                    </div>
+
+                </div>
+            </div>
+            <hr>
+            <footer>
+                <p>{{ sconf.site_footer }}</p>
+            </footer>
+        </div>
+        <!--/.fluid-container-->
+        <link href="{{ STATIC_URL }}vendors/datepicker.css" rel="stylesheet" media="screen">
+        <link href="{{ STATIC_URL }}vendors/uniform.default.css" rel="stylesheet" media="screen">
+        <link href="{{ STATIC_URL }}vendors/chosen.min.css" rel="stylesheet" media="screen">
+
+        <link href="{{ STATIC_URL }}vendors/wysiwyg/bootstrap-wysihtml5.css" rel="stylesheet" media="screen">
+
+        <script src="{{ STATIC_URL }}vendors/jquery-1.9.1.js"></script>
+        <script src="{{ STATIC_URL }}bootstrap/js/bootstrap.min.js"></script>
+        <script src="{{ STATIC_URL }}vendors/jquery.uniform.min.js"></script>
+        <script src="{{ STATIC_URL }}vendors/chosen.jquery.min.js"></script>
+        <script src="{{ STATIC_URL }}vendors/bootstrap-datepicker.js"></script>
+
+        <script src="{{ STATIC_URL }}vendors/wysiwyg/wysihtml5-0.3.0.js"></script>
+        <script src="{{ STATIC_URL }}vendors/wysiwyg/bootstrap-wysihtml5.js"></script>
+
+        <script src="{{ STATIC_URL }}vendors/wizard/jquery.bootstrap.wizard.min.js"></script>
+
+
+        <script src="{{ STATIC_URL }}assets/scripts.js"></script>
+        <!-- Tree Scripts -->
+        <link rel="stylesheet" href="{{ STATIC_URL }}tree/css/zTreeStyle/zTreeStyle.css" type="text/css">
+        <script type="text/javascript" src="{{ STATIC_URL }}tree/js/jquery.ztree.core-3.5.js"></script>
+        <script type="text/javascript" src="{{ STATIC_URL }}tree/js/jquery.ztree.excheck-3.5.js"></script>
+        <!--
+        <script type="text/javascript" src="{{ STATIC_URL }}tree/js/jquery.ztree.exedit-3.5.js"></script>
+        -->
+        <script type="text/javascript" src="{{ STATIC_URL }}dashboard/customer-tree.js"></script>
+        <!-- Tree Scripts -->
+        <script>
+        $(function() {
+            $(".datepicker").datepicker();
+            $(".uniform_on").uniform();
+            $(".chzn-select").chosen({width: "150px"});
+            $('.textarea').wysihtml5();
+            $('#rootwizard').bootstrapWizard({onTabShow: function(tab, navigation, index) {
+                var $total = navigation.find('li').length;
+                var $current = index+1;
+                var $percent = ($current/$total) * 100;
+                $('#rootwizard').find('.bar').css({width:$percent+'%'});
+                // If it's the last tab then hide the last button and show the finish instead
+                if($current >= $total) {
+                    $('#rootwizard').find('.pager .next').hide();
+                    $('#rootwizard').find('.pager .finish').show();
+                    $('#rootwizard').find('.pager .finish').removeClass('disabled');
+                } else {
+                    $('#rootwizard').find('.pager .next').show();
+                    $('#rootwizard').find('.pager .finish').hide();
+                }
+            }});
+            $('#rootwizard .finish').click(function() {
+                //alert('Finished!, Starting over!');
+                //$('#rootwizard').find("a[href*='tab1']").trigger('click');
+                //Submit the form
+                $('#customer-reg-form').submit();
+            });
+        });
+        </script>
+    </body>
+
+</html>

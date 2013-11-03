@@ -1,0 +1,254 @@
+<!DOCTYPE html>
+<html>
+    
+    <head>
+        <title>Customer Registration | {{ sconf.site_title }}</title>
+        <!-- Bootstrap -->
+        <link href="{{ STATIC_URL }}bootstrap/css/bootstrap.min.css" rel="stylesheet" media="screen">
+        <link href="{{ STATIC_URL }}bootstrap/css/bootstrap-responsive.min.css" rel="stylesheet" media="screen">
+        <link href="{{ STATIC_URL }}assets/styles.css" rel="stylesheet" media="screen">
+        <!--[if lte IE 8]><script language="javascript" type="text/javascript" src="{{ STATIC_URL }}vendors/flot/excanvas.min.js"></script><![endif]-->
+        <!-- HTML5 shim, for IE6-8 support of HTML5 elements -->
+        <!--[if lt IE 9]>
+            <script src="http://html5shim.googlecode.com/svn/trunk/html5.js"></script>
+        <![endif]-->
+        <script src="{{ STATIC_URL }}vendors/modernizr-2.6.2-respond-1.1.0.min.js"></script>
+    </head>
+    
+    <body>
+        <div class="navbar navbar-fixed-top">
+            <div class="navbar-inner">
+                <div class="container-fluid">
+                    {% include "topbar.html" %}
+                </div>
+            </div>
+        </div>
+        <div class="container-fluid">
+            <div class="row-fluid">
+                {% include "sidebar.html" %}
+                <!--/span-->
+                <div class="span9" id="content">
+                    <!-- wizard -->
+                    <div class="row-fluid section">
+                         <!-- block -->
+                        <div class="block">
+                            <div class="navbar navbar-inner block-header">
+                                <div class="muted pull-left">Form Wizard</div>
+                            </div>
+                            <div class="block-content collapse in">
+                                <div class="span12">
+                                    <div id="rootwizard">
+                                        <div class="navbar">
+                                          <div class="navbar-inner">
+                                            <div class="container">
+                                        <ul>
+                                            <li><a href="#tab1" data-toggle="tab">Access Details</a></li>
+                                            <li><a href="#tab2" data-toggle="tab">Personal Details</a></li>
+                                            <li><a href="#tab3" data-toggle="tab">Configuration</a></li>
+                                        </ul>
+                                         </div>
+                                          </div>
+                                        </div>
+                                        <div id="bar" class="progress progress-striped active">
+                                          <div class="bar"></div>
+                                        </div>
+                                        <div class="tab-content">
+                                            <div class="tab-pane" id="tab1">
+                                               <form class="form-horizontal" method="post" action="./" enctype="multipart/form-data">
+                                                  <fieldset>
+                                                    <div class="control-group">
+                                                      <label class="control-label" for="focusedInput">Login Name</label>
+                                                      <div class="controls">
+                                                        <input class="input-xlarge focused" id="id_login_name" name="login_name" type="text" value="">
+                                                      </div>
+                                                    </div>
+                                                    <div class="control-group">
+                                                      <label class="control-label" for="focusedInput">Password</label>
+                                                      <div class="controls">
+                                                        <input class="input-xlarge focused" id="id_password" name="password" type="text" value="">
+                                                      </div>
+                                                    </div>
+                                                    <div class="control-group">
+                                                      <label class="control-label" for="focusedInput">Name</label>
+                                                      <div class="controls">
+                                                        <input class="input-xlarge focused" id="id_name" name="name" type="text" value="">
+                                                      </div>
+                                                    </div>
+                                                    <div class="control-group">
+                                                      <label class="control-label" for="focusedInput">Email</label>
+                                                      <div class="controls">
+                                                        <input class="input-xlarge focused" id="focusedInput" type="text" value="">
+                                                      </div>
+                                                    </div>
+                                                    <div class="control-group">
+                                                      <label class="control-label" for="fileInput">Display Picture</label>
+                                                      <div class="controls">
+                                                        <input class="input-file uniform_on" id="id_display_pic" name="display_pic" type="file">
+                                                      </div>
+                                                    </div>
+                                                  </fieldset>
+                                                </form>
+                                            </div>
+                                            <div class="tab-pane" id="tab2">
+                                                <form class="form-horizontal">
+                                                  <fieldset>
+                                                    <div class="control-group">
+                                                      <label class="control-label" for="focusedInput">Address</label>
+                                                      <div class="controls">
+                                                        <input class="input-xlarge focused" id="id_address" name="address" type="text" value="">
+                                                      </div>
+                                                    </div>
+                                                    <div class="control-group">
+                                                      <label class="control-label" for="focusedInput">City</label>
+                                                      <div class="controls">
+                                                        <input class="input-xlarge focused" id="id_city" name="city" type="text" value="">
+                                                      </div>
+                                                    </div>
+                                                    <div class="control-group">
+                                                      <label class="control-label" for="focusedInput">Phone Number</label>
+                                                      <div class="controls">
+                                                        <input class="input-xlarge focused" id="id_mobile_no" name="mobile_no" type="text" value="">
+                                                      </div>
+                                                    </div>
+                                                    <div class="control-group">
+                                                      <label class="control-label" for="focusedInput">Email Address</label>
+                                                      <div class="controls">
+                                                        <input class="input-xlarge focused" id="id_email_addr" name="email_addr" type="text" value="">
+                                                      </div>
+                                                    </div>
+                                                  </fieldset>
+                                                </form>
+                                            </div>
+                                            <div class="tab-pane" id="tab3">
+                                                <form class="form-horizontal">
+                                                  <fieldset>
+
+                                        <!--div class="control-group">
+                                          <label class="control-label" for="select01">Select list</label>
+                                          <div class="controls">
+                                            <select id="select01" class="input-xlarge chzn-select">
+                                              <option>something</option>
+                                              <option>2</option>
+                                              <option>3</option>
+                                              <option>4</option>
+                                              <option>5</option>
+                                            </select>
+                                          </div>
+                                        </div-->
+
+
+                                                    <div class="control-group">
+                                                      <label class="control-label" for="select01">Alert Type</label>
+                                                      <div class="controls">
+                                                        <select id="id_alert_type" name="alert_type" class="chzn-select">
+                                                          <option value="some">something</option>
+                                                          <option value="a">a</option>
+                                                          <option value="b">b</option>
+                                                          <option value="c">c</option>
+                                                        </select>
+                                                      </div>
+                                                    </div>
+                                                    <div class="control-group">
+                                                      <label class="control-label" for="focusedInput">Role</label>
+                                                      <div class="controls">
+                                                        <select id="id_role" name="role" class="chzn-select">
+                                                          <option>something</option>
+                                                          <option value="x">x</option>
+                                                          <option value="y">y</option>
+                                                          <option value="z">z</option>
+                                                        </select>    
+                                                      </div>
+                                                    </div>
+                                                    <div class="control-group">
+                                                      <label class="control-label" for="focusedInput">Parent</label>
+                                                      <div class="controls">
+                                                        <select id="id_parent" name="parent" class="chzn-select">
+                                                          <option>something</option>
+                                                          <option value="1">1</option>
+                                                          <option value="2">2</option>
+                                                          <option value="3">3</option>
+                                                        </select>
+                                                      </div>
+                                                    </div>
+                                                    <div class="control-group">
+                                                      <label class="control-label" for="focusedInput">Valid Till</label>
+                                                      <div class="controls">
+                                                        <input type="text" class="datepicker" id="id_validity_till" 
+                                                            name="validity_till" value="">
+                                                      </div>
+                                                    </div>
+                                                  </fieldset>
+                                                </form>
+                                            </div>
+                                            <ul class="pager wizard">
+                                                <li class="previous first" style="display:none;"><a href="javascript:void(0);">First</a></li>
+                                                <li class="previous"><a href="javascript:void(0);">Previous</a></li>
+                                                <li class="next last" style="display:none;"><a href="javascript:void(0);">Last</a></li>
+                                                <li class="next"><a href="javascript:void(0);">Next</a></li>
+                                                <li class="next finish" style="display:none;"><a href="javascript:;">Finish</a></li>
+                                            </ul>
+                                        </div>  
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <!-- /block -->
+                    </div>
+
+                </div>
+            </div>
+            <hr>
+            <footer>
+                <p>{{ sconf.site_footer }}</p>
+            </footer>
+        </div>
+        <!--/.fluid-container-->
+        <link href="{{ STATIC_URL }}vendors/datepicker.css" rel="stylesheet" media="screen">
+        <link href="{{ STATIC_URL }}vendors/uniform.default.css" rel="stylesheet" media="screen">
+        <link href="{{ STATIC_URL }}vendors/chosen.min.css" rel="stylesheet" media="screen">
+
+        <link href="{{ STATIC_URL }}vendors/wysiwyg/bootstrap-wysihtml5.css" rel="stylesheet" media="screen">
+
+        <script src="{{ STATIC_URL }}vendors/jquery-1.9.1.js"></script>
+        <script src="{{ STATIC_URL }}bootstrap/js/bootstrap.min.js"></script>
+        <script src="{{ STATIC_URL }}vendors/jquery.uniform.min.js"></script>
+        <script src="{{ STATIC_URL }}vendors/chosen.jquery.min.js"></script>
+        <script src="{{ STATIC_URL }}vendors/bootstrap-datepicker.js"></script>
+
+        <script src="{{ STATIC_URL }}vendors/wysiwyg/wysihtml5-0.3.0.js"></script>
+        <script src="{{ STATIC_URL }}vendors/wysiwyg/bootstrap-wysihtml5.js"></script>
+
+        <script src="{{ STATIC_URL }}vendors/wizard/jquery.bootstrap.wizard.min.js"></script>
+
+
+        <script src="{{ STATIC_URL }}assets/scripts.js"></script>
+        <script>
+        $(function() {
+            $(".datepicker").datepicker();
+            $(".uniform_on").uniform();
+            $(".chzn-select").chosen({width: "100px"});
+            $('.textarea').wysihtml5();
+            $('#rootwizard').bootstrapWizard({onTabShow: function(tab, navigation, index) {
+                var $total = navigation.find('li').length;
+                var $current = index+1;
+                var $percent = ($current/$total) * 100;
+                $('#rootwizard').find('.bar').css({width:$percent+'%'});
+                // If it's the last tab then hide the last button and show the finish instead
+                if($current >= $total) {
+                    $('#rootwizard').find('.pager .next').hide();
+                    $('#rootwizard').find('.pager .finish').show();
+                    $('#rootwizard').find('.pager .finish').removeClass('disabled');
+                } else {
+                    $('#rootwizard').find('.pager .next').show();
+                    $('#rootwizard').find('.pager .finish').hide();
+                }
+            }});
+            $('#rootwizard .finish').click(function() {
+                alert('Finished!, Starting over!');
+                $('#rootwizard').find("a[href*='tab1']").trigger('click');
+            });
+        });
+        </script>
+    </body>
+
+</html>

@@ -1,0 +1,43 @@
+                <div class="span3" id="sidebar">
+                    <ul class="nav nav-list bs-docs-sidenav nav-collapse collapse">
+                        <li>
+                            &nbsp;&nbsp;
+                            <button class="btn btn-mini tooltip-top" id="get_checked_node_btn" 
+                                data-original-title="Show checked devices only."><i class="icon-eye-open"></i></button>
+                            <button class="btn btn-primary btn-mini tooltip-top" id="expand_tree"
+                                data-original-title="Expand the tree completely."><i class="icon-fullscreen"></i></button>
+                            <button class="btn btn-primary btn-mini tooltip-top" id="shrink_tree"
+                                data-original-title="Shrink the tree completely."><i class="icon-resize-small"></i></button>
+                            <button class="btn btn-danger btn-mini tooltip-top" id="uncheck_tree"
+                                data-original-title="Clear all the checked items."><i class="icon-remove"></i></button>
+                            <!--button class="btn btn-success btn-mini tooltip-top" id="check_all_tree"
+                                data-original-title="Check all the items."><i class="icon-ok"></i></button-->
+                            <button class="btn btn-inverse btn-mini tooltip-top" id="track_selected"
+                                data-original-title="Track the single selected item."><i class="icon-road icon-white"></i></button>
+                            <button class="btn btn-inverse btn-mini tooltip-top" id="clear_selected_item"
+                                data-original-title="Unselect the selected item."><i class="icon-ban-circle icon-white"></i></button>
+                        </li>
+                        <li>
+                            <div id="tree_loader">                    
+                             <img src="{{ STATIC_URL }}images/ajax_loader_blue_350.gif" 
+                                    height="50px" width="50px" align="center" />
+                            </div>
+                            <ul id="customerTree" class="ztree">
+                            </ul>
+                        </li>
+                    </ul>
+                </div>
+               <!-- Modal Dialogue box for alerting -->
+                                    <div id="alertModalBox" class="modal hide">
+                                            <div class="modal-header">
+                                                <button data-dismiss="modal" class="close" type="button">&times;</button>
+                                                <h3 id="alertModalBoxTitle">Alert</h3>
+                                            </div>
+                                            <div class="modal-body" id="alertModalBoxBody">
+                                                <p>Something went wrong</p>
+                                            </div>
+                                            <div class="modal-footer" id="alertModalBoxFooter">
+                                                <a data-dismiss="modal" class="btn btn-primary" href="#">OK</a>
+                                            </div>
+                                        </div>
+               <!-- modal Dialogue box for alerting -->
