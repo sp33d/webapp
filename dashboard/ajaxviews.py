@@ -13,13 +13,15 @@ from django.utils import timezone
 
 import datetime
 import json 
+import hashlib
 
 from website.models import SiteConfiguration
 from dashboard.models import Customer, Contact, FuelTankType, Device
 from dashboard.decorators import login_required
 
 import helper
-from dashboard.form import CustomerLoginForm, CustomerRegistrationForm, CustomerUpdationForm
+from dashboard.form import CustomerLoginForm, CustomerRegistrationForm, CustomerUpdationForm, \
+    DeviceUpdationForm
 
 logger = logging.getLogger('dashboard.ajaxviews')
 
@@ -180,10 +182,8 @@ def customer_object(request):
         return HttpResponse(json.dumps(result, indent=4), mimetype="application/json")
 
     if c.is_descendant_of(customer):
-        c.dirty = False
-        c.save()
         result['status'] = 'success'
-        result['msg'] = 'Customer restored/recycled successfully.'
+        result['msg'] = 'Customer object serialized successfully.'
         result['customer'] = c.get_serialized_object()
         return HttpResponse(json.dumps(result, indent=4), mimetype="application/json")
     else:
@@ -193,12 +193,15 @@ def customer_object(request):
 
 
 @login_required
-def print_customer_updation_form(request):
+def customer_update(request):
     result = {}
     result['status'] = 'failed'
     result['error'] = []
-    
-    cln = request.POST['ln']
+    form_saved = False
+    if 'ln' in request.POST:
+        cln = request.POST['ln']
+    else:
+        cln = request.POST['login_name']
     customer = Customer.objects.get(login_name=request.session["ln"])
     try:
         c = Customer.objects.get(login_name=cln)
@@ -213,10 +216,220 @@ def print_customer_updation_form(request):
         return HttpResponse(json.dumps(result, indent=4), mimetype="application/json")
 
     if c.is_descendant_of(customer):
-        form = CustomerUpdationForm(request=request)
+        if request.method == 'POST' and request.is_ajax() and 'name' in request.POST:
+            form = CustomerUpdationForm(data=request.POST, files=request.FILES, request=request)
+            if form.is_valid():
+                ln = form.cleaned_data.get('login_name')
+                cust = Customer.objects.get(login_name=ln)
+                temp = form.cleaned_data.get('password')
+                if not temp == "":
+                    cust.passwd = hashlib.md5(temp.encode('utf-8')).hexdigest()
+                cust.name = form.cleaned_data.get('name')
+                temp = form.cleaned_data.get('display_pic')
+                if temp:
+                    cust.display_pic = temp
+                cust.address = form.cleaned_data.get('address')
+                cust.city = form.cleaned_data.get('city')
+                cust.mobile_no = form.cleaned_data.get('mobile_no')
+                cust.email_addr = form.cleaned_data.get('email_addr')
+                cust.alert_type = form.cleaned_data.get('alert_type')
+                cust.role = form.cleaned_data.get('role')
+                validity_till = form.cleaned_data.get('validity_till')
+                cust.validity_till = datetime.datetime(validity_till.year, validity_till.month, validity_till.day, 0, 0, 0)
+                cust.save()
+                form_saved = True              
+                form = CustomerUpdationForm(request=request) 
+            else:
+                logger.error('Errors are' + str(form.errors)) 
+        else: 
+            form = CustomerUpdationForm(request=request)
         result['status'] = 'success'
-        result['form'] = form.as_table()    
+        result['form'] = form.as_table()   
+        result['form_saved'] = form_saved 
     else:
         result['status'] = 'failed'
         result['error'].append('Requested customer is not a descendent.')
-    return HttpResponse(json.dumps(result, indent=4), mimetype="application/json") 
+    return HttpResponse(json.dumps(result, indent=4), mimetype="application/json")
+
+
+@login_required
+def device_remove(request):
+    result = {}
+    result['status'] = 'failed'
+    result['error'] = []
+
+    did = request.POST['did']
+    customer = Customer.objects.get(login_name=request.session["ln"])
+    try:
+        d = Device.objects.get(imei=did)
+        c = d.owner
+    except Customer.DoesNotExist, err:
+        result['status'] = 'failed'
+        result['error'].append('No such device.')
+        return HttpResponse(json.dumps(result, indent=4), mimetype="application/json")
+
+    if d.dirty:
+        result['status'] = 'failed'
+        result['error'].append('This device is already removed.')
+        return HttpResponse(json.dumps(result, indent=4), mimetype="application/json")
+
+    if c.is_descendant_of(customer) or c.id == customer.id:
+        d.dirty = True
+        d.save()
+        result['status'] = 'success'
+        result['msg'] = 'Device removed successfully.'
+        return HttpResponse(json.dumps(result, indent=4), mimetype="application/json")
+    else:
+        result['status'] = 'failed'
+        result['error'].append('Requested device is not a descendent.')
+    return HttpResponse(json.dumps(result, indent=4), mimetype="application/json")
+
+@login_required
+def device_recycle(request):
+    result = {}
+    result['status'] = 'failed'
+    result['error'] = []
+
+    did = request.POST['did']
+    customer = Customer.objects.get(login_name=request.session["ln"])
+    try:
+        d = Device.objects.get(imei=did)
+        c = d.owner
+    except Customer.DoesNotExist, err:
+        result['status'] = 'failed'
+        result['error'].append('No such device.')
+        return HttpResponse(json.dumps(result, indent=4), mimetype="application/json")
+
+    if not d.dirty:
+        result['status'] = 'failed'
+        result['error'].append('This device is already active.')
+        return HttpResponse(json.dumps(result, indent=4), mimetype="application/json")
+
+    if c.is_descendant_of(customer) or c.id == customer.id:
+        d.dirty = False
+        d.save()
+        result['status'] = 'success'
+        result['msg'] = 'Device recycled successfully.'
+        return HttpResponse(json.dumps(result, indent=4), mimetype="application/json")
+    else:
+        result['status'] = 'failed'
+        result['error'].append('Requested device is not a descendent.')
+    return HttpResponse(json.dumps(result, indent=4), mimetype="application/json")
+
+@login_required
+def device_object(request):
+    result = {}
+    result['status'] = 'failed'
+    result['error'] = []
+
+    did = request.POST['did']
+    customer = Customer.objects.get(login_name=request.session["ln"])
+    try:
+        d = Device.objects.get(imei=did)
+        c = d.owner
+    except Customer.DoesNotExist, err:
+        result['status'] = 'failed'
+        result['error'].append('No such device.')
+        return HttpResponse(json.dumps(result, indent=4), mimetype="application/json")
+
+    if d.dirty:
+        result['status'] = 'failed'
+        result['error'].append('This device is not active.')
+        return HttpResponse(json.dumps(result, indent=4), mimetype="application/json")
+
+    if c.is_descendant_of(customer) or c.id == customer.id:
+        result['status'] = 'success'
+        result['msg'] = 'Device serialized successfully.'
+        result['device'] = d.get_serialized_object()
+        return HttpResponse(json.dumps(result, indent=4), mimetype="application/json")
+    else:
+        result['status'] = 'failed'
+        result['error'].append('Requested device is not a descendent.')
+    return HttpResponse(json.dumps(result, indent=4), mimetype="application/json")
+
+
+@login_required
+def device_update(request):
+    result = {}
+    result['status'] = 'failed'
+    result['error'] = []
+    form_saved = False
+    if 'did' in request.POST:
+        did = request.POST['did']
+    else:
+        did = request.POST['imei']
+    customer = Customer.objects.get(login_name=request.session["ln"])
+
+    try:
+        d = Device.objects.get(imei=did)
+        c = d.owner
+    except Device.DoesNotExist, err:
+        result['status'] = 'failed'
+        result['error'].append('No such device.')
+        return HttpResponse(json.dumps(result, indent=4), mimetype="application/json")
+
+    if d.dirty:
+        result['status'] = 'failed'
+        result['error'].append('This device is not active.')
+        return HttpResponse(json.dumps(result, indent=4), mimetype="application/json")
+
+    if c.is_descendant_of(customer) or c.id == customer.id:
+        if request.method == 'POST' and request.is_ajax() and 'imei' in request.POST:
+            form = DeviceUpdationForm(data=request.POST, files=request.FILES, request=request)
+            if form.is_valid():
+                #device.imei = form.cleaned_data.get('imei')
+                device = d
+                device.name = form.cleaned_data.get('name')
+                device.device_type = 'normal'
+                device.protocol = form.cleaned_data.get('protocol')
+                device.icon = form.cleaned_data.get('icon')
+                device.imsi = form.cleaned_data.get('imsi')
+                device.stock_st = form.cleaned_data.get('stock_st')
+                device.tank_sz = form.cleaned_data.get('tank_sz')
+                #Get FuelTankType Instance
+                fuelTankType = FuelTankType.objects.get(pk=form.cleaned_data.get('fuel_tank'))
+                device.fuel_tank = fuelTankType
+                device.max_speed = form.cleaned_data.get('max_speed')
+                device.max_temp = form.cleaned_data.get('max_temp')
+                device.lowest_fuel = form.cleaned_data.get('lowest_fuel')
+                device.rc_number = form.cleaned_data.get('rc_number')
+                device.rc_date = form.cleaned_data.get('rc_date')
+                device.insurance_number = form.cleaned_data.get('insurance_number')
+                device.insurance_company = form.cleaned_data.get('insurance_company')
+                device.insurance_date = form.cleaned_data.get('insurance_date')
+                device.insurance_due_date = form.cleaned_data.get('insurance_due_date')
+                device.insurance_premium = form.cleaned_data.get('insurance_premium')
+                device.servicing_due_date = form.cleaned_data.get('servicing_due_date')
+                device.servicing_due_km = form.cleaned_data.get('servicing_due_km')
+                device.odometer_reading = form.cleaned_data.get('odometer_reading')
+                if form.cleaned_data.get('driver_dp'):
+                    device.driver_dp = form.cleaned_data.get('driver_dp')
+                device.driver_name = form.cleaned_data.get('driver_name')
+                device.driver_addr = form.cleaned_data.get('driver_addr')
+                device.driver_contact_no = form.cleaned_data.get('driver_contact_no')
+                device.license_no = form.cleaned_data.get('license_no')
+                device.contract_company = form.cleaned_data.get('contract_company')
+                device.contract_amt = form.cleaned_data.get('contract_amt')
+                device.contract_renewal_dt = form.cleaned_data.get('contract_renewal_dt')
+                device.contract_date = form.cleaned_data.get('contract_date')
+                device.license_exp_date = form.cleaned_data.get('license_exp_date')
+                device.subscription_amt = form.cleaned_data.get('subscription_amt')
+                owner = Customer.objects.get(login_name=form.cleaned_data.get('owner'))
+                device.owner = owner
+                device.save()
+                form_saved = True
+                form = DeviceUpdationForm(request=request)
+            else:
+                logger.error('Errors are' + str(form.errors))
+        else:
+            form = DeviceUpdationForm(request=request)
+        result['status'] = 'success'
+        result['form'] = form.as_table()
+        result['form_saved'] = form_saved
+    else:
+        result['status'] = 'failed'
+        result['error'].append('Requested device is not a descendent.')
+    return HttpResponse(json.dumps(result, indent=4), mimetype="application/json")
+
+
+

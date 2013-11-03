@@ -67,12 +67,12 @@
 						<th>Owner</th>
 						<th>DOR</th>
 						<th>OK</th>
-                                                <th><i class="icon-wrench"></i></th>
+                                                <th>Operations</th>
 					    </tr>
 					</thead>
 					<tbody>
                                             {% for device in devicelist %}
-					    <tr>
+					    <tr {% if cust.dirty %} class="error" {% endif %}>
                                                 <td>{{ device.name }}</td> 
                                                 <td>{{ device.imei }}</td> 
                                                 <td>{{ device.imsi }}</td> 
@@ -87,16 +87,28 @@
                                                         <img src="{{ STATIC_URL }}/images/icon-yes.gif" />
                                                     {% endif %}
                                                 </td>
-                                                <td class="">
+                                                <td id="action_{{device.id}}">
+                                                    {% if device.dirty %}
+                                                        <button class="btn btn-success tooltip-top" id="recycle_customer"
+                                                            data-original-title="Restore/Recycle customer."
+                                                            onclick="recycleDevice('{{device.imei}}', 'action_{{device.id}}')">
+                                                            &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+                                                            <i class="icon-repeat"></i>
+                                                            &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</button>
+                                                    {% else %}
                                                     <button class="btn btn-mini tooltip-top" id="show_device_details"
-                                                        data-original-title="Show details." onclick="showDeviceDetails('{{device.imei}}')">
+                                                        data-original-title="Show details." 
+                                                        onclick="showDeviceDetails('{{device.imei}}', 'action_{{device.id}}')">
                                                         <i class="icon-share"></i></button>
                                                     <button class="btn btn-mini btn-primary tooltip-top" id="show_device_details"
-                                                        data-original-title="Edit details." onclick=editDeviceDetails('{{device.imei}}')">
+                                                        data-original-title="Edit details." 
+                                                        onclick="editDeviceDetails('{{device.imei}}', 'action_{{device.id}}')">
                                                         <i class="icon-pencil"></i></button>
                                                     <button class="btn btn-mini btn-danger tooltip-top" id="show_device_details"
-                                                        data-original-title="Remove." onclick="removeDevice('{{device.imei}}')">
+                                                        data-original-title="Remove." 
+                                                        onclick="removeDevice('{{device.imei}}', 'action_{{device.id}}')">
                                                         <i class="icon-remove-circle"></i></button>
+                                                    {% endif %}
                                                 </td>
 		    			    </tr>
                                             {% endfor %}
@@ -132,6 +144,7 @@
         -->
         <script type="text/javascript" src="{{ STATIC_URL }}dashboard/customer-tree.js"></script>
         <!-- Tree Scripts --> 
+        <script type="text/javascript" src="{{ STATIC_URL }}dashboard/device-list.js"></script>
         <script>
         $(function() {
             

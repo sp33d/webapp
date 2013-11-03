@@ -74,13 +74,20 @@ function editCustomerDetails(cln, divn) {
     alertBox('Edit Customer', msg, true, action_html);
     $('#actionStatus').html('<img src="/static/images/ajax_loader_blue_350.gif" height="10px" width="10px"/>');
     $.ajax({
-            url: "/dashboard/ajax/customer-update-form/",
+            url: "/dashboard/ajax/customer-update/",
             data: {'ln': cln},
             type: "POST"
     }).done(function(data){
             if( data['status'] == 'success' ) {
-                customer_update_form  = data['form']; 
+                var customer_update_form = '<form class="form-horizontal" method="post" '+
+                    'action="/dashboard/ajax/customer-update/" enctype="multipart/form-data"'+
+                    'name="customer-updation-form" id="customer-updation-form">'+
+                        '<table width="100%" border="0" cellpadding="0" cellspacing="0">'+
+                            data['form'] + 
+                        '</table>'+
+                    '</form>';
                 $('#actionStatus').html(customer_update_form);
+                setErrorlistStyle();
             }else{
                 var error_msg = '<ul style="color:red">';
                 for(var index=0; index < data['error'].length; index++)
@@ -223,4 +230,60 @@ function confirmRecycleCustomer(cln, divn) {
     }).fail(function(jqXHR){
             $('#actionStatus').html('<font color="red">Unable to load.</font>');//jqXHR.responseText);
     });
+}
+
+
+function confirmUpdateCustomer(cln, divn) {
+    var frm = $('#customer-updation-form');
+    frm.submit(function () {
+        $.ajax({
+            type: frm.attr('method'),
+            url: frm.attr('action'),
+            data: frm.serialize(),
+            success: function (data) {
+                if(data['status'] == 'success'){
+                    if(data['form_saved']){
+                        //Data saved show success msg
+                        var msg = '<div class="alert alert-success">'+
+                            '<button class="close" data-dismiss="alert">x</button>'+
+                            '<strong>Success! </strong>' +
+                            'Details updated.'+
+                            '</div>';
+                        //$("#actionStatus").html(msg);
+                        $('#'+divn).html('Updated!');
+                        $('#alertModalBox').modal('hide');
+                    }else{
+                        //Something wrong with the form, show it again
+                        var customer_update_form = '<form class="form-horizontal" method="post" '+
+                            'action="/dashboard/ajax/customer-update/" enctype="multipart/form-data"'+
+                            'name="customer-updation-form" id="customer-updation-form">'+
+                                '<table width="100%" border="0" cellpadding="0" cellspacing="0">'+
+                                    data['form'] +
+                                '</table>'+
+                            '</form>';
+                        $("#actionStatus").html(customer_update_form); 
+                        setErrorlistStyle();
+                    }
+                }else{
+                    //Some BL error
+                    var error_msg = '<ul style="color:red">';
+                    for(var index=0; index < data['error'].length; index++)
+                    {
+                        error_msg += '<li>'+ data['error'][index]  + '</li>';
+                    }
+                    error_msg += '<ul>';
+                    $('#actionStatus').html(error_msg);
+                }
+            },
+            error: function(data) {
+                $("#actionStatus").html("Something went wrong!");
+            }
+        });
+        return false;
+    });
+    frm.submit();
+}
+
+function setErrorlistStyle() {
+    $(".errorlist").css({'color': 'red', 'float': 'right'});
 }

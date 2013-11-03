@@ -27,5 +27,10 @@ urlpatterns += patterns('',
     url(r'^ajax/customer-remove/$', 'dashboard.ajaxviews.customer_remove', name='dash_ajax_customer_remove'), 
     url(r'^ajax/customer-recycle/$', 'dashboard.ajaxviews.customer_recycle', name='dash_ajax_customer_recycle'), 
     url(r'^ajax/customer-object/$', 'dashboard.ajaxviews.customer_object', name='dash_ajax_customer_object'),
-    url(r'^ajax/customer-update-form/$', 'dashboard.ajaxviews.print_customer_updation_form', name='dash_ajax_customer_updation_form'),
+    url(r'^ajax/customer-update/$', 'dashboard.ajaxviews.customer_update', name='dash_ajax_customer_update'),
+    #Device based actions
+    url(r'^ajax/device-remove/$', 'dashboard.ajaxviews.device_remove', name='dash_ajax_device_remove'),
+    url(r'^ajax/device-recycle/$', 'dashboard.ajaxviews.device_recycle', name='dash_ajax_device_recycle'),
+    url(r'^ajax/device-object/$', 'dashboard.ajaxviews.device_object', name='dash_ajax_device_object'),
+    url(r'^ajax/device-update/$', 'dashboard.ajaxviews.device_update', name='dash_ajax_device_update'),
 )

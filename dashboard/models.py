@@ -155,4 +155,45 @@ class Device(models.Model):
     def __unicode__(self):
         return self.name 
 
-
+    def get_serialized_object(self):
+        obj = {}
+        obj['imei'] = self.imei
+        obj['name'] = self.name
+        obj['device_type'] = self.device_type
+        obj['protocol'] = self.protocol
+        obj['icon'] = self.icon
+        obj['imsi'] = self.imsi
+        obj['stock_st'] = self.stock_st
+        obj['tank_sz'] = self.tank_sz
+        obj['fuel_tank'] = self.fuel_tank.name
+        obj['max_speed'] = self.max_speed
+        obj['max_temp'] = self.max_temp
+        obj['lowest_fuel'] = self.lowest_fuel
+        obj['rc_number'] = self.rc_number
+        obj['rc_date'] = self.rc_date
+        obj['insurance_number'] = self.insurance_number
+        obj['insurance_company'] = self.insurance_company
+        obj['insurance_date'] = self.insurance_date
+        obj['insurance_due_date'] = self.insurance_due_date
+        obj['insurance_premium'] = self.insurance_premium
+        obj['servicing_due_date'] = self.servicing_due_date
+        obj['servicing_due_km'] = self.servicing_due_km
+        obj['odometer_reading'] = self.odometer_reading
+        if  self.driver_dp:
+            obj['driver_dp'] = self.driver_dp.url
+        else:
+            obj['driver_dp'] = ''
+        obj['driver_name'] = self.driver_name
+        obj['driver_addr'] = self.driver_addr
+        obj['driver_contact_no'] = self.driver_contact_no
+        obj['license_no'] = self.license_no
+        obj['license_exp_date'] = self.license_exp_date
+        obj['contract_company'] = self.contract_company
+        obj['contract_amt'] = self.contract_amt
+        obj['contract_renewal_dt'] = self.contract_renewal_dt
+        obj['contract_date'] = self.contract_date
+        obj['subscription_amt'] = self.subscription_amt
+        obj['owner'] = self.owner.name
+        obj['dor'] = int(self.dor.strftime("%s"))
+        obj['dirty'] = self.dirty
+        return obj 
