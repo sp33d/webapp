@@ -195,21 +195,18 @@ e.g. <code>(013612345678AP01HSO)</code>
         |      |             |               |     | 2nd Byte: ACC/Ignition, 1 is On.                                    |
         |      |             |               |     | 3rd Byte: Interpret as Hexadec no (0xF) in binary(0000) bits means: |
         |      |             |               |     |        [ 0 0 0 0 ]                                                  |
-        |      |             |               |     |          ^ ^ ^ ^                                                    |
         |      |             |               |     |    Oil <-+ | | | (0: Supply, 1: Cut)                                |
         |      |             |               |     |    -X- <---+ | | (Not in use)                                       |
         |      |             |               |     |    SOS <-----+ | (0: Pressed, 1: Open)                              |
         |      |             |               |     |    -X- <-------+ (Not in use)                                       | 
         |      |             |               |     | 4th Byte: Interpret as Hexadec no (0xF) in binary(0000) bits means: |
         |      |             |               |     |        [ 0 0 0 0 ]                                                  |
-        |      |             |               |     |          ^ ^ ^ ^                                                    |
         |      |             |               |     |    Door<-+ | | | (0: Close, 1: Open)                                |
         |      |             |               |     |    HS1 <---+ | | (0: Not connected/Low, 1: High)                    |
         |      |             |               |     |    HS2 <-----+ | (0: Not connected/Low, 1: High)                    |
         |      |             |               |     |    HS3 <-------+ (0: Not connected/Low, 1: High)                    |
         |      |             |               |     | 5th Byte: Interpret as Hexadec no (0xF) in binary(0000) bits means: |
         |      |             |               |     |        [ 0 0 0 0 ]                                                  |
-        |      |             |               |     |          ^ ^ ^ ^                                                    |
         |      |             |               |     |    LS1 <-+ | | | (0: Not connected/Low, 1: High)                    |
         |      |             |               |     |    LS2 <---+ | | (0: Not connected/Low, 1: High)                    |
         |      |             |               |     |    LS3 <-----+ | (0: Not connected/Low, 1: High)                    |
