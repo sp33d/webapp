@@ -193,13 +193,29 @@ e.g. <code>(013612345678AP01HSO)</code>
         +------+-------------+---------------+-----+---------------------------------------------------------------------+
         | 10.  | I/O State   |               | 8B  | 1st Byte: Main power, 0 is On.                                      |
         |      |             |               |     | 2nd Byte: ACC/Ignition, 1 is On.                                    |
-        |      |             |               |     | 3rd Byte: Blender, 0 not in use, 1 clockwise turning,               |
-        |      |             |               |     |     2 anti-clockwise turning.                                       |
-        |      |             |               |     | 4th Byte: Empty/Heavy Vehicle, 0 not in use, 1 Empty, 2 Heavy.      |
-        |      |             |               |     | 5th Byte: Front Door, 0 not in use, 1 Open, 2 Close.                |
-        |      |             |               |     | 6th Byte: back Door, 0 not in use, 1 Open , 2 Close.                |
-        |      |             |               |     | 7th Byte: Back Light, 0 not in use, 1 On, 2 Close.                  |
-        |      |             |               |     | 8th Byte: Vibration, 0 not in use, 1 Vibrating, 2 Not Vibrating.    |
+        |      |             |               |     | 3rd Byte: Interpret as Hexadec no (0xF) in binary(0000) bits means: |
+        |      |             |               |     |        [ 0 0 0 0 ]                                                  |
+        |      |             |               |     |          ^ ^ ^ ^                                                    |
+        |      |             |               |     |    Oil <-+ | | | (0: Supply, 1: Cut)                                |
+        |      |             |               |     |    -X- <---+ | | (Not in use)                                       |
+        |      |             |               |     |    SOS <-----+ | (0: Pressed, 1: Open)                              |
+        |      |             |               |     |    -X- <-------+ (Not in use)                                       | 
+        |      |             |               |     | 4th Byte: Interpret as Hexadec no (0xF) in binary(0000) bits means: |
+        |      |             |               |     |        [ 0 0 0 0 ]                                                  |
+        |      |             |               |     |          ^ ^ ^ ^                                                    |
+        |      |             |               |     |    Door<-+ | | | (0: Close, 1: Open)                                |
+        |      |             |               |     |    HS1 <---+ | | (0: Not connected/Low, 1: High)                    |
+        |      |             |               |     |    HS2 <-----+ | (0: Not connected/Low, 1: High)                    |
+        |      |             |               |     |    HS3 <-------+ (0: Not connected/Low, 1: High)                    |
+        |      |             |               |     | 5th Byte: Interpret as Hexadec no (0xF) in binary(0000) bits means: |
+        |      |             |               |     |        [ 0 0 0 0 ]                                                  |
+        |      |             |               |     |          ^ ^ ^ ^                                                    |
+        |      |             |               |     |    LS1 <-+ | | | (0: Not connected/Low, 1: High)                    |
+        |      |             |               |     |    LS2 <---+ | | (0: Not connected/Low, 1: High)                    |
+        |      |             |               |     |    LS3 <-----+ | (0: Not connected/Low, 1: High)                    |
+        |      |             |               |     |    -X- <-------+ (Not in use)                                       |
+        |      |             |               |     | 6th Byte, 7th Byte, 8th Byte: Interpret as Hexadec No (0xFFF) is    | 
+        |      |             |               |     |    Fuel.                                                            |
         +------+-------------+---------------+-----+---------------------------------------------------------------------+
         | 11.  | Milepost    | L             | 1B  |                                                                     |
         +------+-------------+---------------+-----+---------------------------------------------------------------------+

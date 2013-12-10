@@ -1,7 +1,8 @@
 from django import forms
 import logging
-import settings 
 import requests, json
+from django.conf import settings
+
 
 from website.models import SiteConfiguration
 from dashboard.models import Address
@@ -80,7 +81,7 @@ def parse_address_remotely(lat_lng_tuples):
 
 
 def parse_address(lat_lng_tuples):
-    result = []
+    result = {}
     parse_remotely = []
     for lat, lng in lat_lng_tuples:
         #Check Locally
@@ -95,5 +96,6 @@ def parse_address(lat_lng_tuples):
     response = parse_address_remotely(parse_remotely)
     if response:
         for key in response.keys():
+            Address.set_address(key.split(':')[0], key.split(':')[1], response[key])
             result[key] = response[key]
     return result

@@ -4,8 +4,7 @@ from treebeard.mp_tree import MP_Node
 import redis
 import logging
 import datetime
-
-
+from django.conf import settings
 
 redisClient = redis.Redis(host='localhost', port=6379, db=0)
 logger = logging.getLogger('dashboard.models')
@@ -289,7 +288,7 @@ class Address(object):
         return add  #Note: if the address is not in local Redis DB, None will be returned
 
     @staticmethod
-    def set_address(plat, plng, address)
+    def set_address(plat, plng, address):
         plat = str(plat)[0:6]
         plng = str(plng)[0:6]
         key = plat+":"+plng
