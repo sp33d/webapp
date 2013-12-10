@@ -219,12 +219,15 @@ class Packet(models.Model):
     # I/O States
     ps =  models.BooleanField(default=False)
     ig =  models.BooleanField(default=False)
-    blender = models.CharField(max_length=2, default='0')
-    weight = models.CharField(max_length=2, default='0')
-    front_door = models.CharField(max_length=2, default='0')
-    back_door = models.CharField(max_length=2, default='0')
-    back_light = models.CharField(max_length=2, default='0')
-    vibration = models.CharField(max_length=2, default='0')
+    oil =  models.BooleanField(default=False)
+    sos =  models.BooleanField(default=False)
+    door =  models.BooleanField(default=False)
+    high_sensor1 =  models.BooleanField(default=False)
+    high_sensor2 =  models.BooleanField(default=False)
+    high_sensor3 =  models.BooleanField(default=False)
+    low_sensor1 =  models.BooleanField(default=False)
+    low_sensor2 =  models.BooleanField(default=False)
+    low_sensor3 =  models.BooleanField(default=False)
     mileage =  models.FloatField(default=None, null=True)
     # Analog I/O Values
     fuel = models.FloatField(default=None, null=True)
@@ -253,12 +256,15 @@ class Packet(models.Model):
         obj['orientation'] = self.orientation
         obj['ps'] = self.direction
         obj['ig'] = self.ig
-        obj['blender'] = self.blender
-        obj['weight'] = self.weight
-        obj['front_door'] = self.front_door
-        obj['back_door'] = self.back_door
-        obj['back_light'] = self.back_light
-        obj['vibration'] = self.vibration
+        obj['oil'] = self.oil
+        obj['sos'] = self.sos
+        obj['door'] = self.door
+        obj['high_sensor1'] = self.high_sensor1
+        obj['high_sensor2'] = self.high_sensor2
+        obj['high_sensor3'] = self.high_sensor3
+        obj['low_sensor1'] = self.low_sensor1
+        obj['low_sensor2'] = self.low_sensor2
+        obj['low_sensor3'] = self.low_sensor3
         obj['mileage'] = self.mileage
         obj['fuel'] = self.fuel
         obj['temprature'] = self.temprature
