@@ -9,8 +9,8 @@ this code is based on the https://github.com/durian/tk102-server
 1. TK103 TCP server starts listening on a specified HOST and PORT.
 2. TK103 client  connects to the server and sends the Enrollment/Login/Registration Packet.
     the communication can be graphically shown as:
-
-
+    
+    ```
     +-------------+                                                     +-------------+
     |   Server    |                                                     |   Client    |
     +-------------+                                                     +-------------+
@@ -33,7 +33,7 @@ this code is based on the https://github.com/durian/tk102-server
     | \-------------------------------Response to Handshake-------------------------->| if ok: -----+   |
     |                                                                                 | else:  ---------+   
     |                                                                                 |
-
+    ```
 
 3. Terminate the server.
 
@@ -45,14 +45,14 @@ this code is based on the https://github.com/durian/tk102-server
 
     |<-1B->|<- 12B   ->|<-4B->|<-15B          ->|<-60B              ->|<-1B->|
 
-    e.g.
-    <code>(013612345678BP05000013612345678080524A2232.9806N11304.9355E000.1101241323.8700000000L000450AC)</code>
-    1. <code>(</code>: Head
-    2. <code>013612345678</code>: Device ID
-    3. <code>BP05</code>: Command
-    4. <code>000013612345678</code>: 000 + Device ID
-    5. <code>080524A2232.9806N11304.9355E000.1101241323.8700000000L000450AC</code>: GPS Data
-    6. <code>)</code>: Tail
+e.g. <code>(013612345678BP05000013612345678080524A2232.9806N11304.9355E000.1101241323.8700000000L000450AC)</code>
+
+1. <code>(</code>: Head
+2. <code>013612345678</code>: Device ID
+3. <code>BP05</code>: Command
+4. <code>000013612345678</code>: 000 + Device ID
+5. <code>080524A2232.9806N11304.9355E000.1101241323.8700000000L000450AC</code>: GPS Data
+6. <code>)</code>: Tail
 
 #Login/Enrollment Response Packet (Server to Device)
     
@@ -62,12 +62,12 @@ this code is based on the https://github.com/durian/tk102-server
 
     |<-1B->|<- 12B   ->|<-4B->|<-1B->|
 
-    e.g.
-    <code>(013612345678AP05)</code>
-    1. <code>(</code>: Head
-    2. <code>013612345678</code>: Device ID
-    3. <code>AP05</code>: Command
-    4. <code>)</code>: Tail
+e.g. <code>(013612345678AP05)</code>
+
+1. <code>(</code>: Head
+2. <code>013612345678</code>: Device ID
+3. <code>AP05</code>: Command
+4. <code>)</code>: Tail
  
 #Feedback Data Packet (Device to Server)
 
@@ -77,13 +77,13 @@ this code is based on the https://github.com/durian/tk102-server
 
     |<-1B->|<- 12B   ->|<-4B->|<-60B              ->|<-1B->|
 
-    e.g.
-    <code>(013612345678BP05080524A2232.9806N11304.9355E000.1101241323.8700000000L000450AC)</code>
-    1. <code>(</code>: Head
-    2. <code>013612345678</code>: Device ID
-    3. <code>BP05</code>: Command
-    4. <code>080524A2232.9806N11304.9355E000.1101241323.8700000000L000450AC</code>: GPS Data
-    5. <code>)</code>: Tail
+e.g. <code>(013612345678BR00080524A2232.9806N11304.9355E000.1101241323.8700000000L000450AC)</code>
+
+1. <code>(</code>: Head
+2. <code>013612345678</code>: Device ID
+3. <code>BR00</code>: Command
+4. <code>080524A2232.9806N11304.9355E000.1101241323.8700000000L000450AC</code>: GPS Data
+5. <code>)</code>: Tail
 
 #Alarm Packet Request (Device to Server)
 
@@ -93,12 +93,12 @@ this code is based on the https://github.com/durian/tk102-server
 
     |<-1B->|<- 12B   ->|<-4B->|<-1B      ->|<-60B              ->|<-1B->|   
 
-    e.g.
-    <code>(013612345678BO01x080524A2232.9806N11304.9355E000.1101241323.8700000000L000450AC)</code>
-    1. <code>(</code>: Head
-    2. <code>013612345678</code>: Device ID
-    3. <code>BO01</code>: Command
-    4. <code>x</code>: Alarm type, could be (0-7)
+e.g. <code>(013612345678BO01x080524A2232.9806N11304.9355E000.1101241323.8700000000L000450AC)</code>
+
+1. <code>(</code>: Head
+2. <code>013612345678</code>: Device ID
+3. <code>BO01</code>: Command
+4. <code>x</code>: Alarm type, could be (0-7)
     4.1 0 - Power Off
     4.2 1 - Accident
     4.3 2 - SOS
@@ -107,8 +107,8 @@ this code is based on the https://github.com/durian/tk102-server
     4.6 5 - Overspeed
     4.7 6 - Out of geofence
     4.8 7 - Movement Alert
-    5. <code>080524A2232.9806N11304.9355E000.1101241323.8700000000L000450AC</code>: GPS Data
-    6. <code>)</code>: Tail 
+5. <code>080524A2232.9806N11304.9355E000.1101241323.8700000000L000450AC</code>: GPS Data
+6. <code>)</code>: Tail 
 
 #Alarm Response Packet (Server to Device)
 
@@ -118,12 +118,12 @@ this code is based on the https://github.com/durian/tk102-server
 
     |<-1B->|<- 12B   ->|<-4B->|<-1B      ->|<-1B->|
 
-    e.g.
-    <code>(013612345678AS01x)</code>
-    1. <code>(</code>: Head
-    2. <code>013612345678</code>: Device ID
-    3. <code>AS01</code>: Command
-    4. <code>x</code>: Alarm type, could be (0-7)
+e.g. <code>(013612345678AS01x)</code>
+
+1. <code>(</code>: Head
+2. <code>013612345678</code>: Device ID
+3. <code>AS01</code>: Command
+4. <code>x</code>: Alarm type, could be (0-7)
     4.1 0 - Power Off
     4.2 1 - Accident
     4.3 2 - SOS
@@ -132,7 +132,7 @@ this code is based on the https://github.com/durian/tk102-server
     4.6 5 - Overspeed
     4.7 6 - Out of geofence
     4.8 7 - Movement Alert
-    5. <code>)</code>: Tail
+5. <code>)</code>: Tail
 
 
 #Handshake Request Packet (Device to Server)
@@ -143,14 +143,14 @@ this code is based on the https://github.com/durian/tk102-server
 
     |<-1B->|<- 12B   ->|<-4B->|<-15B          ->|<-3B->|<-1B->|
  
-    e.g.
-    <code>(013612345678BP05000013612345678HSO)</code>
-    1. <code>(</code>: Head
-    2. <code>013612345678</code>: Device ID
-    3. <code>BP05</code>: Command
-    4. <code>000013612345678</code>: 000 + Device ID
-    5. <code> HSO </code>: Hanshake request literal
-    6. <code>)</code>: Tail
+e.g. <code>(013612345678BP05000013612345678HSO)</code>
+
+1. <code>(</code>: Head
+2. <code>013612345678</code>: Device ID
+3. <code>BP05</code>: Command
+4. <code>000013612345678</code>: 000 + Device ID
+5. <code> HSO </code>: Hanshake request literal
+6. <code>)</code>: Tail
 
 #Handshake Response Packet (Server to Device)
     
@@ -160,13 +160,53 @@ this code is based on the https://github.com/durian/tk102-server
 
     |<-1B->|<- 12B   ->|<-4B->|<-3B->|<-1B->|
 
-    e.g.
-    <code>(013612345678AP01HSO)</code>
-    1. <code>(</code>: Head
-    2. <code>013612345678</code>: Device ID
-    3. <code>AP01</code>: Command
-    4. <code>HSO</code>: Handshake literal
-    5. <code>)</code>: Tail
-    
+e.g. <code>(013612345678AP01HSO)</code>
+
+1. <code>(</code>: Head
+2. <code>013612345678</code>: Device ID
+3. <code>AP01</code>: Command
+4. <code>HSO</code>: Handshake literal
+5. <code>)</code>: Tail
+
+#GPS Data format
+
+    ```
+        +------+-------------+---------------+-----+---------------------------------------------------------------------+
+        | S NO | Feild       | Format        | Sz  |   Explanation                                                       |
+        +------+-------------+---------------+-----+---------------------------------------------------------------------+
+        | 1.   | Date        | YYMMDD        | 6B  |                                                                     |
+        +------+-------------+---------------+-----+---------------------------------------------------------------------+
+        | 2.   | Signal      | A/V           | 1B  |  A - GPS Valid, V- GPS is not Valid                                 |
+        +------+-------------+---------------+-----+---------------------------------------------------------------------+
+        | 3.   | Lat         |               | 9B  |                                                                     |
+        +------+-------------+---------------+-----+---------------------------------------------------------------------+
+        | 4.   | Lat Ind     | N/S           | 1B  |                                                                     |
+        +------+-------------+---------------+-----+---------------------------------------------------------------------+
+        | 5.   | Lng         |               | 10B |                                                                     |
+        +------+-------------+---------------+-----+---------------------------------------------------------------------+
+        | 6.   | Lng Ind     | E/W           | 1B  |                                                                     |
+        +------+-------------+---------------+-----+---------------------------------------------------------------------+
+        | 7.   | Speed       |               | 5B  |                                                                     |
+        +------+-------------+---------------+-----+---------------------------------------------------------------------+
+        | 8.   | Time        | HHMMSS        | 6B  | UTC                                                                 |
+        +------+-------------+---------------+-----+---------------------------------------------------------------------+
+        | 9.   | Orientation |               | 6B  |                                                                     |
+        +------+-------------+---------------+-----+---------------------------------------------------------------------+
+        | 10.  | I/O State   |               | 8B  | 1st Byte: Main power, 0 is On.                                      |
+        |      |             |               |     | 2nd Byte: ACC/Ignition, 1 is On.                                    |
+        |      |             |               |     | 3rd Byte: Blender, 0 not in use, 1 clockwise turning,               |
+        |      |             |               |     |     2 anti-clockwise turning.                                       |
+        |      |             |               |     | 4th Byte: Empty/Heavy Vehicle, 0 not in use, 1 Empty, 2 Heavy.      |
+        |      |             |               |     | 5th Byte: Front Door, 0 not in use, 1 Open, 2 Close.                |
+        |      |             |               |     | 6th Byte: back Door, 0 not in use, 1 Open , 2 Close.                |
+        |      |             |               |     | 7th Byte: Back Light, 0 not in use, 1 On, 2 Close.                  |
+        |      |             |               |     | 8th Byte: Vibration, 0 not in use, 1 Vibrating, 2 Not Vibrating.    |
+        +------+-------------+---------------+-----+---------------------------------------------------------------------+
+        | 11.  | Milepost    | L             | 1B  |                                                                     |
+        +------+-------------+---------------+-----+---------------------------------------------------------------------+
+        | 12.   | Mileage     |               | 8B  | To be interpreted Hexadecimal String.                               |
+        +------+-------------+---------------+-----+---------------------------------------------------------------------+
+    ```
+
 #To do
 1. Handle the other msgs
