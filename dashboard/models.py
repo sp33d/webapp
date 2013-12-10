@@ -1,9 +1,14 @@
 from django.db import models
 from django.utils import timezone
 from treebeard.mp_tree import MP_Node
-
-
+import redis
+import logging
 import datetime
+
+
+
+redisClient = redis.Redis(host='localhost', port=6379, db=0)
+logger = logging.getLogger('dashboard.models')
 
 class Customer(MP_Node):
     login_name   = models.CharField(max_length=32, unique=True)
@@ -261,3 +266,35 @@ class Packet(models.Model):
         obj['dor']= int(self.dor.strftime("%s"))
         obj['dirty'] = self.dirty
         return obj
+
+
+class Address(object):
+    """
+        Redis Object: Used to create a local Address database repository for fequently used data
+            this will help in reducing the Network call and waiting to remote reverse geocoding server.
+
+        add -- hashtable
+             lat:lng     -- key which stores the address at lat(xx.xxx) and lng(xx.xxx) 
+    """
+
+    lat = None
+    lng = None
+    address = None
+
+    @staticmethod
+    def get_address(plat, plng):
+        plat = str(plat)[0:6]
+        plng = str(plng)[0:6]
+        add = redisClient.hget("add", plat+":"+plng)
+        return add  #Note: if the address is not in local Redis DB, None will be returned
+
+    @staticmethod
+    def set_address(plat, plng, address)
+        plat = str(plat)[0:6]
+        plng = str(plng)[0:6]
+        key = plat+":"+plng
+        if len(key) and len(address):
+            redisClient.hset("add", key, address)
+            return True
+        return False
+

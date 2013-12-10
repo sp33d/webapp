@@ -1,5 +1,5 @@
 from django.contrib import admin
-from dashboard.models import Customer, Contact, FuelTankType, Device
+from dashboard.models import Customer, Contact, FuelTankType, Device, Packet
 
 class CustomerAdmin(admin.ModelAdmin):
     list_display = (
@@ -51,7 +51,33 @@ class DeviceAdmin(admin.ModelAdmin):
         'dirty',
         )
 
+class PacketAdmin(admin.ModelAdmin):
+    list_display = (
+        'device',
+        'packet_time',
+        'signal',
+        'lat',
+        'lng',
+        'address',
+        'speed',
+        'orientation',
+        'ps',
+        'ig',
+        'blender',
+        'weight',
+        'front_door',
+        'back_door',
+        'back_light',
+        'vibration',
+        'mileage',
+        'fuel',
+        'temprature',
+        'dor',
+        'dirty',
+        )
+
 admin.site.register(Customer, CustomerAdmin)
 admin.site.register(Contact, ContactAdmin)
 admin.site.register(FuelTankType, FuelTankTypeAdmin)
 admin.site.register(Device, DeviceAdmin)
+admin.site.register(Packet, PacketAdmin)

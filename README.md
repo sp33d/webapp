@@ -20,6 +20,11 @@ Python 2.7.x
 
 Django 1.5.5.final.0
 
+Redis Server/Client 2.2.12
+
+python-redis
+
+requests
 
 Django Apps:
 ------------
