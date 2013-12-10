@@ -9,6 +9,7 @@ this code is based on the https://github.com/durian/tk102-server
 1. TK103 TCP server starts listening on a specified HOST and PORT.
 2. TK103 client  connects to the server and sends the Enrollment/Login/Registration Packet.
     the communication can be graphically shown as:
+    <code>
     +-------------+                                                     +-------------+
     |   Server    |                                                     |   Client    |
     +-------------+                                                     +-------------+
@@ -31,6 +32,7 @@ this code is based on the https://github.com/durian/tk102-server
     | \-------------------------------Response to Handshake-------------------------->| if ok: -----+   |
     |                                                                                 | else:  ---------+   
     |                                                                                 |
+    </code>
 3. Terminate the server.
 
 #Login/Enrollment Request Packet (Device to Server)
