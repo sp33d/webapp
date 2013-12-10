@@ -200,64 +200,32 @@ class Device(models.Model):
         obj['dirty'] = self.dirty
         return obj 
 
-class Locator(models.Model):
-    device = models.ForeignKey(Device)
-    packet_time = models.DateTimeField(default=timezone.now())
-    signal = models.CharField(max_length=2, default='A')
-    lat = models.FloatField(default=None, null=True)
-    lng = models.FloatField(default=None, null=True)
-    address = models.CharField(max_length=64, default='NA')
-    speed = models.FloatField(default=None, null=True)
-    direction = models.FloatField(default=None, null=True)
-    ps =  models.BooleanField(default=False)
-    ig =  models.BooleanField(default=False)
-    ac = models.BooleanField(default=False)
-    mileage =  models.FloatField(default=None, null=True)
-    fuel = models.FloatField(default=None, null=True)
-    temprature = models.FloatField(default=None, null=True)
-    dor         = models.DateTimeField(default=timezone.now())
-    dirty       = models.BooleanField(default=False)
-
-    def __unicode__(self):
-        return str(self.device.imei) + str(self.packet_time)
-
-    def get_serialized_object(self):
-        obj = {}
-        obj['object'] = 'Locator'
-        obj['device'] = self.device.imei
-        obj['packet_time'] = int(self.packet_time.strftime("%s"))
-        obj['signal'] = self.signal
-        obj['lat'] = self.lat
-        obj['lng'] = self.lng
-        obj['address'] = self.address
-        obj['speed'] = self.speed
-        obj['direction'] = self.direction
-        obj['ps'] = self.direction
-        obj['ig'] = self.ig
-        obj['ac'] = self.ac
-        obj['mileage'] = self.mileage
-        obj['fuel'] = self.fuel
-        obj['temprature'] = self.temprature
-        obj['dor']= int(self.dor.strftime("%s"))
-        obj['dirty'] = self.dirty
-        return obj
-
-
 class Packet(models.Model):
     device = models.ForeignKey(Device)
     packet_time = models.DateTimeField(default=timezone.now())
+    # Location Details
     signal = models.CharField(max_length=2, default='A')
     lat = models.FloatField(default=None, null=True)
+    lat_indicator = models.CharField(max_length=1, default='')
     lng = models.FloatField(default=None, null=True)
+    lng_indicator = models.CharField(max_length=1, default='')
     address = models.CharField(max_length=64, default='NA')
     speed = models.FloatField(default=None, null=True)
-    direction = models.FloatField(default=None, null=True)
+    orientation = models.FloatField(default=None, null=True)
+    # I/O States
     ps =  models.BooleanField(default=False)
     ig =  models.BooleanField(default=False)
-    ac = models.BooleanField(default=False)
+    blender = models.CharField(max_length=2, default='0')
+    weight = models.CharField(max_length=2, default='0')
+    front_door = models.CharField(max_length=2, default='0')
+    back_door = models.CharField(max_length=2, default='0')
+    back_light = models.CharField(max_length=2, default='0')
+    vibration = models.CharField(max_length=2, default='0')
     mileage =  models.FloatField(default=None, null=True)
+    # Analog I/O Values
     fuel = models.FloatField(default=None, null=True)
     temprature = models.FloatField(default=None, null=True)
+    #House Keeping Items
     dor         = models.DateTimeField(default=timezone.now())
     dirty       = models.BooleanField(default=False)
 
@@ -267,17 +235,26 @@ class Packet(models.Model):
     def get_serialized_object(self):
         obj = {}
         obj['object'] = 'Packet'
-        obj['device'] = self.device.imei
+        obj['imei'] = self.device.imei
+        obj['name'] = self.device.name
+        obj['device_type'] = self.device.device_type
         obj['packet_time'] = int(self.packet_time.strftime("%s"))
         obj['signal'] = self.signal
         obj['lat'] = self.lat
+        obj['lat_indicator'] = self.lat_indicator
         obj['lng'] = self.lng
+        obj['lng_indicator'] = self.lng_indicator
         obj['address'] = self.address
         obj['speed'] = self.speed
-        obj['direction'] = self.direction
+        obj['orientation'] = self.orientation
         obj['ps'] = self.direction
         obj['ig'] = self.ig
-        obj['ac'] = self.ac
+        obj['blender'] = self.blender
+        obj['weight'] = self.weight
+        obj['front_door'] = self.front_door
+        obj['back_door'] = self.back_door
+        obj['back_light'] = self.back_light
+        obj['vibration'] = self.vibration
         obj['mileage'] = self.mileage
         obj['fuel'] = self.fuel
         obj['temprature'] = self.temprature
