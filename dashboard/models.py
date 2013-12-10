@@ -44,6 +44,7 @@ class Customer(MP_Node):
 
     def get_serialized_object(self):
         obj = {}
+        obj['object'] = 'Customer'
         obj['login_name'] = self.login_name
         obj['passwd'] = 'X' * len(self.passwd)
         obj['name'] = self.name
@@ -157,6 +158,7 @@ class Device(models.Model):
 
     def get_serialized_object(self):
         obj = {}
+        obj['object'] = 'Device'
         obj['imei'] = self.imei
         obj['name'] = self.name
         obj['device_type'] = self.device_type
@@ -197,3 +199,88 @@ class Device(models.Model):
         obj['dor'] = int(self.dor.strftime("%s"))
         obj['dirty'] = self.dirty
         return obj 
+
+class Locator(models.Model):
+    device = models.ForeignKey(Device)
+    packet_time = models.DateTimeField(default=timezone.now())
+    signal = models.CharField(max_length=2, default='A')
+    lat = models.FloatField(default=None, null=True)
+    lng = models.FloatField(default=None, null=True)
+    address = models.CharField(max_length=64, default='NA')
+    speed = models.FloatField(default=None, null=True)
+    direction = models.FloatField(default=None, null=True)
+    ps =  models.BooleanField(default=False)
+    ig =  models.BooleanField(default=False)
+    ac = models.BooleanField(default=False)
+    mileage =  models.FloatField(default=None, null=True)
+    fuel = models.FloatField(default=None, null=True)
+    temprature = models.FloatField(default=None, null=True)
+    dor         = models.DateTimeField(default=timezone.now())
+    dirty       = models.BooleanField(default=False)
+
+    def __unicode__(self):
+        return str(self.device.imei) + str(self.packet_time)
+
+    def get_serialized_object(self):
+        obj = {}
+        obj['object'] = 'Locator'
+        obj['device'] = self.device.imei
+        obj['packet_time'] = int(self.packet_time.strftime("%s"))
+        obj['signal'] = self.signal
+        obj['lat'] = self.lat
+        obj['lng'] = self.lng
+        obj['address'] = self.address
+        obj['speed'] = self.speed
+        obj['direction'] = self.direction
+        obj['ps'] = self.direction
+        obj['ig'] = self.ig
+        obj['ac'] = self.ac
+        obj['mileage'] = self.mileage
+        obj['fuel'] = self.fuel
+        obj['temprature'] = self.temprature
+        obj['dor']= int(self.dor.strftime("%s"))
+        obj['dirty'] = self.dirty
+        return obj
+
+
+class Packet(models.Model):
+    device = models.ForeignKey(Device)
+    packet_time = models.DateTimeField(default=timezone.now())
+    signal = models.CharField(max_length=2, default='A')
+    lat = models.FloatField(default=None, null=True)
+    lng = models.FloatField(default=None, null=True)
+    address = models.CharField(max_length=64, default='NA')
+    speed = models.FloatField(default=None, null=True)
+    direction = models.FloatField(default=None, null=True)
+    ps =  models.BooleanField(default=False)
+    ig =  models.BooleanField(default=False)
+    ac = models.BooleanField(default=False)
+    mileage =  models.FloatField(default=None, null=True)
+    fuel = models.FloatField(default=None, null=True)
+    temprature = models.FloatField(default=None, null=True)
+    dor         = models.DateTimeField(default=timezone.now())
+    dirty       = models.BooleanField(default=False)
+
+    def __unicode__(self):
+        return str(self.device.imei) + str(self.packet_time)
+
+    def get_serialized_object(self):
+        obj = {}
+        obj['object'] = 'Packet'
+        obj['device'] = self.device.imei
+        obj['packet_time'] = int(self.packet_time.strftime("%s"))
+        obj['signal'] = self.signal
+        obj['lat'] = self.lat
+        obj['lng'] = self.lng
+        obj['address'] = self.address
+        obj['speed'] = self.speed
+        obj['direction'] = self.direction
+        obj['ps'] = self.direction
+        obj['ig'] = self.ig
+        obj['ac'] = self.ac
+        obj['mileage'] = self.mileage
+        obj['fuel'] = self.fuel
+        obj['temprature'] = self.temprature
+        obj['dor']= int(self.dor.strftime("%s"))
+        obj['dirty'] = self.dirty
+        return obj
