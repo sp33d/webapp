@@ -2,7 +2,8 @@ from django.conf.urls import patterns, include, url
 
 
 urlpatterns = patterns('',
-
+    #Server API
+    url(r'^api/$', 'dashboard.views.api', name='dash_api'),
     #Test page
     url(r'^ref/$', 'dashboard.views.refhome', name='dash_refhome'),
     url(r'^tree/$', 'dashboard.views.tree', name='dash_tree'),
@@ -18,6 +19,9 @@ urlpatterns = patterns('',
     #Customer Related Actions
     url(r'^customer-registration/$', 'dashboard.views.customer_registration', name='dash_custreg'),
     url(r'^customer-list/$', 'dashboard.views.customer_list', name='dash_custlist'),
+    #Realtime Related Actions
+    url(r'^map/$', 'dashboard.views.show_map', name='dash_map'),
+    url(r'^summary/$', 'dashboard.views.summary', name='dash_tabular'),
 )
 
 

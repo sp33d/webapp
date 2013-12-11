@@ -99,14 +99,23 @@ e.g. <code>(013612345678BO01x080524A2232.9806N11304.9355E000.1101241323.87000000
 2. <code>013612345678</code>: Device ID
 3. <code>BO01</code>: Command
 4. <code>x</code>: Alarm type, could be (0-7)
-    4.1 0 - Power Off
-    4.2 1 - Accident
-    4.3 2 - SOS
-    4.4 3 - Antitheft
-    4.5 4 - Low speed
-    4.6 5 - Overspeed
-    4.7 6 - Out of geofence
-    4.8 7 - Movement Alert
+
+    0 - Power Off
+
+    1 - Accident
+
+    2 - SOS
+
+    3 - Antitheft
+
+    4 - Low speed
+
+    5 - Overspeed
+
+    6 - Out of geofence
+
+    7 - Movement Alert
+
 5. <code>080524A2232.9806N11304.9355E000.1101241323.8700000000L000450AC</code>: GPS Data
 6. <code>)</code>: Tail 
 
@@ -124,14 +133,23 @@ e.g. <code>(013612345678AS01x)</code>
 2. <code>013612345678</code>: Device ID
 3. <code>AS01</code>: Command
 4. <code>x</code>: Alarm type, could be (0-7)
-    4.1 0 - Power Off
-    4.2 1 - Accident
-    4.3 2 - SOS
-    4.4 3 - Antitheft
-    4.5 4 - Low speed
-    4.6 5 - Overspeed
-    4.7 6 - Out of geofence
-    4.8 7 - Movement Alert
+
+    0 - Power Off
+
+    1 - Accident
+
+    2 - SOS
+
+    3 - Antitheft
+
+    4 - Low speed
+
+    5 - Overspeed
+
+    6 - Out of geofence
+
+    7 - Movement Alert
+
 5. <code>)</code>: Tail
 
 
@@ -218,6 +236,75 @@ e.g. <code>(013612345678AP01HSO)</code>
         +------+-------------+---------------+-----+---------------------------------------------------------------------+
         | 12.  | Mileage     |               | 8B  | To be interpreted Hexadecimal String.                               |
         +------+-------------+---------------+-----+---------------------------------------------------------------------+
+#Commincation to the application server
+The data is collected and posted to the application server, over HTTP connection the details could be configured in server.py. Data is posted in a fixed interval of time and a thread safe Queue is used for holding the array of datapackets for the required duration.
+
+Note: a timeout of 2seconds has been defined hence if the webserver doesn't ACK the request between 2 seconds, connection will be terminated from the data server end.
+
+The data is posted in a JSON body of the requested HTTP request which should of the following format:
+
+    [
+        {
+            "orientation": "180.99",
+            "lng_ind": "E",
+            "imei": "088011610051",
+            "sos": "0",
+            "low_sensor1": "0",
+            "lat_ind": "N",
+            "high_sensor3": "0",
+            "high_sensor2": "0",
+            "lng": 77.25513166666666,
+            "speed": "000.0",
+            "high_sensor1": "0",
+            "ig": "0",
+            "ps": "0",
+            "fuel": 0,
+            "mileage": 11125488,
+            "low_sensor2": "0",
+            "low_sensor3": "0",
+            "oil": "0",
+            "door": "0",
+            "packet_type": "DNRML",
+            "lat": 28.578538333333334,
+            "data": "131211A2834.7123N07715.3079E000.0043500180.9900000000L00A9C2F0)",
+            "signal": "A",
+            "packet_time": 1386735120,
+            "nounce": "088011610051_1386736505.83"
+        },
+        {
+            "orientation": "183.91",
+            "lng_ind": "E",
+            "imei": "088011610051",
+            "sos": "0",
+            "low_sensor1": "0",
+            "lat_ind": "N",
+            "high_sensor3": "0",
+            "high_sensor2": "0",
+            "lng": 77.23499166666667,
+            "speed": "000.0",
+            "high_sensor1": "0",
+            "ig": "0",
+            "ps": "0",
+            "fuel": 0,
+            "mileage": 11119447,
+            "low_sensor2": "0",
+            "low_sensor3": "0",
+            "oil": "0",
+            "door": "0",
+            "packet_type": "DNRML",
+            "lat": 28.60056833333333,
+            "data": "131210A2836.0341N07714.0995E000.0142637183.9100000000L00A9AB57)",
+            "signal": "A",
+            "packet_time": 1386684757,
+            "nounce": "088011610051_1386736510.45"
+        }
+    ]
+
+a special attribute "packet\_type" has been added to identify and differentiate the different types of the packets which are:
+
+1. <code>DNRML</code>: Normal data packet. 
+2. <code>LOGIN</code>: Data from a Login/Enrolment request packet.
+3. <code>ALARM:x</code>: Data from a alarm packet, where x after colon(:) represents the respective alarm type as per the TK103 protocol.
 
 #To do
 1. Handle the other msgs

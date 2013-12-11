@@ -88,7 +88,7 @@ def parse_address(lat_lng_tuples):
         add = Address.get_address(lat, lng)
         if add is not None:
             print "Parsed locally:", lat, lng
-            result[str(lat) + ':' + str(lng)] = add
+            result[str(lat) + ':' + str(lng)] = add[0:63]
         else:
             print "Parsed remotely:", lat, lng
             parse_remotely.append((lat,lng))
@@ -97,5 +97,5 @@ def parse_address(lat_lng_tuples):
     if response:
         for key in response.keys():
             Address.set_address(key.split(':')[0], key.split(':')[1], response[key])
-            result[key] = response[key]
+            result[key] = response[key][0:63]
     return result

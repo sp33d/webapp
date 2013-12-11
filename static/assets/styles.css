@@ -119,7 +119,7 @@ body {
 
 /** Side Bar **/
 .bs-docs-sidenav {
-  max-width: 300px;
+  max-width: 225px;
   margin: 0px 0 0;
   padding: 0;
   background-color: #fff;

@@ -14,13 +14,17 @@ import signal
 import operator
 import shutil
 import re
-from collections import namedtuple
+import requests
+import Queue
+
 try:
     import cPickle as pickle
 except:
     import pickle
-from POSHandler import *
 
+#from POSHandler import *
+from packet import *
+from timer import *
 logging.basicConfig(level=logging.DEBUG, format='%(asctime)s %(levelname)-8s %(message)s')
 #
 rtfile  = logging.handlers.RotatingFileHandler("./tk103.log",maxBytes=1024*1024*10, backupCount=5)
@@ -38,11 +42,13 @@ cformatter = logging.Formatter(fmt=cformat, datefmt="%Y%m%d %H:%M:%S")
 console.setFormatter(cformatter)
 console.setLevel(logging.INFO)
 glogger.addHandler(console)
+q = Queue.Queue()
 #
 
-Pos = namedtuple('Pos', 'imei, lat, lon, spd, bearing, acc, idx')
 
 class TK103RequestHandler(SocketServer.BaseRequestHandler):
+
+
     def __init__(self, request, client_address, server):
         self.logger = glogger #logging.getLogger('TK103Handler')
         self.logger.debug('New request')
@@ -62,40 +68,34 @@ class TK103RequestHandler(SocketServer.BaseRequestHandler):
         """
         Called when a new tracker is initialized.
         """
-        if self.poshandler:
-            self.poshandler.on_start()
+        return
 
     def on_finish(self):
         """
         Called before the thread exits.
         """
-        if self.poshandler:
-            self.poshandler.on_finish()
+        return
 
     def on_msg(self, msg):
-        if self.poshandler:
-            self.poshandler.on_msg(str(msg))
+        return
 
     def on_position(self):
         """
         Called everytime we receive a GPS position string.
         """
-        if self.poshandler:
-            self.poshandler.on_position()
+        return
 
     def on_stationary(self):
         """
         Called if last two positions are the same. To be implemented.
         """
-        if self.poshandler:
-            self.poshandler.on_stationary()
+        return
 
     def on_start_move(self):
         """
         Called if moving again after stationary destection. To be implemented.
         """
-        if self.poshandler:
-            self.poshandler.on_start_move()
+        return
 
     def send(self, msg):
         self.debug('send: '+msg)
@@ -103,6 +103,7 @@ class TK103RequestHandler(SocketServer.BaseRequestHandler):
         self.bytes_s += len(msg)+1
 
     def handle(self):
+
         self.server.socket.setblocking(0)
         #self.server.socket.settimeout(10.0)
         cur_pid         = os.getpid() #threading.current_thread() 
@@ -121,12 +122,6 @@ class TK103RequestHandler(SocketServer.BaseRequestHandler):
         self.infofile   = self.ctldir+"/info"  #contains last lat,lon,... (pickled)
         self.bytesfile  = self.ctldir+"/bytes" #contains bytes received/sent (pickled)
         self.exitfile   = self.ctldir+"/exit"  #written on tracker exit/disappearance
-        self.lat        = 0
-        self.lon        = 0
-        self.spd        = 0
-        self.bearing    = 0
-        self.acc        = 0
-        self.pos        = None
         self.bytes_r    = 0
         self.bytes_s    = 0
         self.posidx     = 0 # number of positions received
@@ -179,13 +174,11 @@ class TK103RequestHandler(SocketServer.BaseRequestHandler):
                 data = data.rstrip()
                 self.info("line["+str(lc)+"]: ("+data+")")
                 lc += 1
-
-                # "##,imei:35971004071XXXX,A;
-                if data[0:7] == "##,imei": # FIRST CONTACT
-                    imei_re = re.compile("##,imei:(\d+),A;")
-                    m = imei_re.match(data)
-                    if m:
-                        self.imei = m.group(1)
+                print "CMD",data[13:17], "Second Part32:35", data[32:35]
+                # Check if Login/Enrollment Request
+                if data[13:17] == 'BP05' and data[32:35] != 'HSO':
+                    self.imei = data[1:13]
+                    print "Request for login from, ", self.imei
                     self.logger = glogger
                     self.info("Init: imei "+self.imei)
                     # create imei file
@@ -197,74 +190,63 @@ class TK103RequestHandler(SocketServer.BaseRequestHandler):
                         self.error("Could not create 'imei' file")
                         self.loop = False
                     #os.utime(last, None)
-                    self.send("LOAD")
+                    self.info("Sending the login ACK to %s" % self.imei)
+                    self.send( '(' + self.imei + 'AP05)' )
                     # 
-                    for (rex, out_str) in startups:
-                        if re.match(rex, self.imei):
-                            self.debug('Found startup entry.')
-                            cmd = out_str.replace("IMEI", self.imei)
-                            self.send(cmd)
+                    #for (rex, out_str) in startups:
+                    #    if re.match(rex, self.imei):
+                    #        self.debug('Found startup entry.')
+                    #        cmd = out_str.replace("IMEI", self.imei)
+                    #        self.send(cmd)
                     #
+                    # Breaking the rest of the Data
+                    p = Packet()
+                    p.decode_packet(self.imei, 'LOGIN', data[32:])
+                    appendPackets(p)
+
                     self.last = time.time()
                     self.counter = self.counts
-                    self.poshandler = POSHandler( self ) 
                     self.on_start()
-
-                elif data == self.imei+";": #"35971004071XXXX;":
-                    self.send("ON")
+                #Check for Handshake Packet
+                elif data[13:17] == 'BP05' and data[32:35] == 'HSO':
+                    self.imei = data[1:13]
+                    print "Handshake request recieved from", self.imei
+                    self.info("Sending Handshake ACK to %s" % self.imei)
+                    self.send('(' + self.imei + 'AP01HSO)')
                     self.last = time.time()
                     self.counter = self.counts
                     os.utime(self.lastfile, None)
-                #imei:35971004071XXXX,tracker,1212220931,,F,083137.000,A,5620.2932,N,01253.7255,E,0.00,0;
-                #imei:35971004071XXXX,tracker,000000000,,L,,,177f,,a122,,,;
-                # check for L(ost) of F(ix) maybe also?  ^
-                elif data[0:4] == "imei":
-                    data = data[:-1] #remove ;
-                    parts = data.split(',')
-                    if len(parts) > 11:
-                        self.last = time.time()
-                        self.counter = self.counts
-                        os.utime(self.lastfile, None) #mark OK
-                        #print parts[7],parts[8],parts[9],parts[10]
-                        #
-                        # parse messages "help me", "et", etc?
-                        # imei:35971004071XXXX,et,1304041745,,F,164528.000,A,5150.6452,N,00551.9452,E,0.00,0;
-                        # imei:35971004071XXXX,help me,1304041743,,F,164345.000,A,5150.6452,N,00551.9452,E,0.00,0;
-                        # imei:35971004071XXXX,tracker,1304041747,,F,164726.000,A,5150.6452,N,00551.9452,E,0.00,0;
-                        if parts[8] != "":
-                            #5620.2932 = ddmm.mmmm
-                            #
-                            ddmmmmmm = float(parts[7])
-                            degs = int(ddmmmmmm / 100)
-                            mins = ddmmmmmm - (degs*100)
-                            lat = degs + mins/60
-                            if parts[8] == "S":
-                                lat = -lat
-                            self.lat = round(lat, 5)
-                            ddmmmmmm = float(parts[9])
-                            degs = int(ddmmmmmm / 100)
-                            mins = ddmmmmmm - (degs*100)
-                            lon = degs + mins/60
-                            if parts[10] == "W":
-                                lon = -lon
-                            self.lon = round(lon, 5)
-                            #
-                            self.spd = float(parts[11])*0.44704 #mi/h,to km/h,to m/s
-                            self.bearing = -1
-                            if parts[12] != "":
-                                self.bearing = parts[12]
-                            #
-                            #'imei, lat, lon, spd, bearing, acc
-                            self.pos = Pos(self.imei, self.lat,self.lon,self.spd,self.bearing,self.acc,self.posidx)
-                            with open(self.infofile, "w") as f:
-                                pickle.dump(self.pos, f)
-                            self.on_position()
-                            self.posidx += 1
-                            #
-                            msg = parts[1]
-                            if msg != "tracker": #could be SOS, battery low, etc.
-                                self.on_msg(msg)
+                #Check For Alarm Packet
+                elif data[13:17] == 'BO01':
+                    self.imei = data[1:13]
+                    self.alarm_type = data[17]
+                    print "Alarm received from", self.imei
+                    self.info("Sending Alarm ACK to %s" % self.imei)
+                    self.send('(' + self.imei + 'AS01' + self.alarm_type + ')')
+            
+                    # Breaking the rest of the Data
+                    p = Packet()
+                    p.decode_packet(self.imei, 'ALARM:' + self.alarm_type , data[28:])
+                    appendPackets(p)
+
+                    self.last = time.time()
+                    self.counter = self.counts
+                    os.utime(self.lastfile, None)
+                #Check for Normal Packet
+                elif data[13:17] == 'BR00':
+                    self.imei = data[1:13]
+                    print "Received Normal packet from", self.imei
+
+                    # Breaking the rest of the Data
+                    p = Packet()
+                    p.decode_packet(self.imei, 'DNRML' , data[17:])
+                    appendPackets(p)
+
+                    self.last = time.time()
+                    self.counter = self.counts
+                    os.utime(self.lastfile, None)
                 else:
+                    print "Fell to undefined case"
                     self.info(data)
                 time.sleep(.1)
                 #
@@ -306,7 +288,6 @@ class TK103RequestHandler(SocketServer.BaseRequestHandler):
                 # Write receive/send stats
                 with open(self.bytesfile, "w") as f:
                     pickle.dump((self.bytes_r, self.bytes_s), f)
-
         self.info('handle ready')
         return
 
@@ -322,7 +303,7 @@ class TK103RequestHandler(SocketServer.BaseRequestHandler):
         self.info( "bytes read="+str(self.bytes_r)+" bytes sent="+str(self.bytes_s)+" points="+str(self.posidx) )
         return SocketServer.BaseRequestHandler.finish(self)
 
-class TK103Server(SocketServer.ForkingMixIn, SocketServer.TCPServer):
+class TK103Server(SocketServer.ThreadingMixIn, SocketServer.TCPServer):
     timeout             = 10
     daemon_threads      = True
     allow_reuse_address = True
@@ -345,15 +326,52 @@ def on_exit(imei, msg):
     """
     Called when the tread is killed/tracker disappeared.
     """
-    ph = POSHandler( None )
-    ph.on_exit(imei, msg)
+    #ph = POSHandler( None )
+    #ph.on_exit(imei, msg)
+    return
+
+def appendPackets(p):
+    q.put(p)
+    print "Added Packet", p
+    #postData(None)
+
+def postData(pckts):
+    """if q.qsize():
+        while q.qsize():
+            print "Removed Packet", q.get()
+    else:
+        print "Queue is empty"
+    #print time.time(), gvars.PACKETS"""
+
+    if q.qsize() < 1:
+        glogger.info("No packets in waiting queue")
+        return None
+    glogger.info(str(q.qsize()) + " Packets in waiting queue")
+    data_to_post = []
+    while q.qsize():
+        pckt = q.get()
+        data_to_post.append(pckt.get_serialized_object())
+    try:
+        url = "http://198.199.77.126/dashboard/api/"
+        headers = {'content-type': 'application/json'}
+        r = requests.post(url, data=json.dumps(data_to_post), headers=headers, timeout=2)
+        if r.status_code == 200:
+            glogger.info(str(q.qsize()) + " Packets posted")
+            #Clear the older data
+            pckts = []
+        else:
+            glogger.info(str(q.qsize()) + " Packets post failed")
+        print r.text
+    except Exception, err:
+        glogger.info(str(q.qsize()) + " Packets post failed due to " + str(err))
+        pass
 
 if __name__ == '__main__':
     import socket
     import threading
 
     #startups = { ("35971004071XXXX", "**,imei:IMEI,C,300s") ]
-    startups = [ ("\d+" , "**,imei:IMEI,C,300s") ] #if imei matches, send string, replaces IMEI with real imei.
+    #startups = [ ("\d+" , "**,imei:IMEI,C,300s") ] #if imei matches, send string, replaces IMEI with real imei.
 
     # Remove left over directories form last time.
     dirs = os.listdir(".")
@@ -364,7 +382,7 @@ if __name__ == '__main__':
             glogger.info("Time delta: %s", str(datetime.timedelta(seconds=td)))
             shutil.rmtree(d)
 
-    PORT     = 9000
+    PORT     = 8080
     address  = ('', PORT) 
     server   = TK103Server(address, TK103RequestHandler)
     ip, port = server.server_address 
@@ -375,11 +393,15 @@ if __name__ == '__main__':
     glogger.info('Server loop running in process:'+str(os.getpid()))
 
     tout = 180 #tracker timeout, 2x90 seconds
-    
+   
+
+    #Start the Timer to Post the data
+    tmr = None
+    tmr = TimerClass(cf_fun=postData, cf_fun_args=q)
+    tmr.start()
     while True:
         try:
             time.sleep(1)
-            # Check our directories
             dirs = os.listdir(".")
             for d in dirs: #Loop over our tk103pid_nnn directories
                 if d[0:8] == "tk103pid":
@@ -429,4 +451,6 @@ if __name__ == '__main__':
                             glogger.exception("Could not read 'bytes' file.")
                         on_exit(imei, "After "+str(datetime.timedelta(seconds=td))+"\nbytes read="+str(bytes_r)+" bytes sent="+str(bytes_s))
         except KeyboardInterrupt:
+            if tmr is not None:
+                tmr.stop()
             sys.exit(0)
