@@ -236,7 +236,8 @@ e.g. <code>(013612345678AP01HSO)</code>
         +------+-------------+---------------+-----+---------------------------------------------------------------------+
         | 12.  | Mileage     |               | 8B  | To be interpreted Hexadecimal String.                               |
         +------+-------------+---------------+-----+---------------------------------------------------------------------+
-#Commincation to the application server
+
+#Communication to the application server
 The data is collected and posted to the application server, over HTTP connection the details could be configured in server.py. Data is posted in a fixed interval of time and a thread safe Queue is used for holding the array of datapackets for the required duration.
 
 Note: a timeout of 2seconds has been defined hence if the webserver doesn't ACK the request between 2 seconds, connection will be terminated from the data server end.
