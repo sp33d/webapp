@@ -16,7 +16,7 @@ import json
 import hashlib
 
 from website.models import SiteConfiguration
-from dashboard.models import Customer, Contact, FuelTankType, Device
+from dashboard.models import Customer, Contact, FuelTankType, Device, Packet
 from dashboard.decorators import login_required
 
 import helper
@@ -431,5 +431,42 @@ def device_update(request):
         result['error'].append('Requested device is not a descendent.')
     return HttpResponse(json.dumps(result, indent=4), mimetype="application/json")
 
+@login_required
+def summary(request):
+    result = {}
+    result['status'] = 'failed'
+    result['error'] = []
 
+    customer = Customer.objects.get(login_name=request.session["ln"])
+    customer_list = customer.get_descendants()
+    device_list = []
+    devices = customer.device_set.all()
+    if len(devices) > 0:
+        device_list += devices
+    for cust in customer_list:
+        devices = cust.device_set.all()
+        if len(devices) > 0:
+            device_list += devices
 
+    result['summary'] = []
+    for device in device_list:
+        summary_record = {}
+        try:
+            packet = device.packet_set.latest('packet_time')
+        except Packet.DoesNotExist, err:
+            packet = None
+            pass
+        summary_record['imei'] = device.imei
+        summary_record['name'] = device.name
+        if packet is None:
+            summary_record['time'] = 0
+            summary_record['packet'] = packet
+        else:
+            summary_record['packet'] = packet.get_serialized_object()
+            summary_record['time'] = int(packet.packet_time.strftime("%s"))
+        result['summary'].append(summary_record)
+
+    result['summary']  = sorted(result['summary'], key=lambda k: k['time'])
+    result['summary'].reverse()
+    result['status'] = 'ok'
+    return HttpResponse(json.dumps(result, indent=4), mimetype="application/json") 

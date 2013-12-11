@@ -237,7 +237,7 @@ class Packet(models.Model):
     dirty       = models.BooleanField(default=False)
 
     def __unicode__(self):
-        return str(self.device.imei) + str(self.packet_time)
+        return str(self.device.imei) + str(self.packet_time.strftime("%s"))
 
     def get_serialized_object(self):
         obj = {}
@@ -254,7 +254,7 @@ class Packet(models.Model):
         obj['address'] = self.address
         obj['speed'] = self.speed
         obj['orientation'] = self.orientation
-        obj['ps'] = self.direction
+        obj['ps'] = self.ps
         obj['ig'] = self.ig
         obj['oil'] = self.oil
         obj['sos'] = self.sos

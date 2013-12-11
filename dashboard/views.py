@@ -10,6 +10,7 @@ import logging, json, pprint
 from django.views.decorators.csrf import ensure_csrf_cookie
 from django.template import Context, loader
 from django.utils import timezone
+from django.utils.timezone import utc
 
 import datetime
 import hashlib
@@ -54,7 +55,7 @@ def refhome(request):
         "door": "0",
         "packet_type": "DNRML",
         "lat": 28.578538333333334,
-        "data": "131211A2834.7123N07715.3079E000.0043500180.9900000000L00A9C2F0)",
+        "data": "131211A2834.7123N07715.3079E000.0041200180.9900000000L00A9C2F0)",
         "signal": "A",
         "packet_time": 1386735120,
         "nounce": "088011610051_1386736505.83"
@@ -81,7 +82,7 @@ def refhome(request):
         "door": "0",
         "packet_type": "DNRML",
         "lat": 28.60056833333333,
-        "data": "131210A2836.0341N07714.0995E000.0142637183.9100000000L00A9AB57)",
+        "data": "131210A2836.0341N07714.0995E000.0141237183.9100000000L00A9AB57)",
         "signal": "A",
         "packet_time": 1386684757,
         "nounce": "088011610051_1386736510.45"
@@ -115,7 +116,7 @@ def api(request):
                 continue
             p = Packet()
             p.device = device
-            p.packet_time = datetime.datetime.fromtimestamp(packet['packet_time'])
+            p.packet_time = datetime.datetime.fromtimestamp(packet['packet_time'], tz=utc)
             p.signal = packet['signal']
             p.lat = packet['lat']
             p.lat_indicator = packet['lat_ind']
@@ -145,7 +146,7 @@ def api(request):
             p.save()
             result[packet['nounce']] = 'saved_ok'
         except Exception, err:
-            logger.error('Error in storing a packet', err)
+            logger.error('Error in storing a packet'+ str(err))
             result[packet['nounce']] = 'error'
             result[packet['nounce']+ '_msg'] = str(err)
             pass

@@ -37,4 +37,6 @@ urlpatterns += patterns('',
     url(r'^ajax/device-recycle/$', 'dashboard.ajaxviews.device_recycle', name='dash_ajax_device_recycle'),
     url(r'^ajax/device-object/$', 'dashboard.ajaxviews.device_object', name='dash_ajax_device_object'),
     url(r'^ajax/device-update/$', 'dashboard.ajaxviews.device_update', name='dash_ajax_device_update'),
+    #Packet based actions
+    url(r'^ajax/summary/$', 'dashboard.ajaxviews.summary', name='dash_ajax_summary'),
 )

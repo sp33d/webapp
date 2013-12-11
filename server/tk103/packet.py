@@ -1,6 +1,7 @@
 import datetime
 import time
 import json
+from django.utils.timezone import utc
 
 class Packet(object):
     imei = None
@@ -95,7 +96,8 @@ class Packet(object):
             hh = int(pstr[33:35])
             ii = int(pstr[35:37])
             ss = int(pstr[37:39])
-            self.packet_time = datetime.datetime(yy, mm, dd, hh, mm, ss)
+            self.packet_time = datetime.datetime(yy, mm, dd, hh, ii, ss, tzinfo=utc)
+            print "Got ", yy,mm,dd,hh,ii,ss, "Made",self.packet_time, "TS",int(self.packet_time.strftime("%s"))
             #Signal
             self.signal = pstr[6]
             #Latitude

@@ -52,12 +52,15 @@
                         <!-- block -->
                         <div class="block">
                             <div class="navbar navbar-inner block-header">
-                                <div class="muted pull-left">Customers</div>
+                                <div class="muted pull-left">Status
+                                    <span id='summaryStatus'></span>
+                                </div>
                             </div>
                             <div class="block-content collapse in">
                                 <div class="span12">
-  				    <table cellpadding="0" cellspacing="0" border="0" class="table table-striped table-bordered" id="example">
-					<thead>
+  				    <div id="summaryTableContainer">
+                                    </div>
+					<!--thead>
 					    <tr>
 					        <th>S No</th>
 						<th>Name</th>
@@ -66,12 +69,13 @@
 						<th>IG</th>
 						<th>GPS</th>
 						<th>Fuel</th>
+                                                <th>Mileage</th>
 						<th>Time</th>
 					    </tr>
 					</thead>
-					<tbody>
+					<tbody id="summaryTableData">
 					</tbody>
-				    </table>
+				    </table-->
                                 </div>
                             </div>
                         </div>
@@ -102,6 +106,9 @@
         -->
         <script type="text/javascript" src="{{ STATIC_URL }}dashboard/customer-tree.js"></script>
         <!-- Tree Scripts --> 
+        <script type="text/javascript" src="{{ STATIC_URL }}dashboard/time.js"></script>
+        <script type="text/javascript" src="{{ STATIC_URL }}dashboard/icon-selector.js"></script>
+        <script type="text/javascript" src="{{ STATIC_URL }}dashboard/summary.js"></script>
         <script>
         $(function() {
             

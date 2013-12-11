@@ -26,6 +26,8 @@ python-redis
 
 requests
 
+pytz
+
 Django Apps:
 ------------
 For Customer Tree: django-treebeard 2.0b2 - https://pypi.python.org/pypi/django-treebeard
