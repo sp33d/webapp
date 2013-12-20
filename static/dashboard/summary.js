@@ -1,4 +1,5 @@
 var summaryTable;
+var csvData = [['No Data']];
 
 $(document).ready(function() {
     $('#summaryTableContainer').html( '<table cellpadding="0" cellspacing="0" border="0" class="table table-striped table-bordered" id="summaryTable"></table>' );
@@ -67,6 +68,36 @@ function alertBox(title, msg, ok_cancel, action_html){
 }
 
 
+function downloadCSV(){
+    var csvContent = csvData;
+    var csvstring="";
+    for(record_index in csvContent){
+        first = true
+        for(feild_index in csvContent[record_index]){
+            if(first){
+                csvstring += '"' + csvContent[record_index][feild_index] + '"';
+                first=false;
+            }else{
+                csvstring += ',"' + csvContent[record_index][feild_index] + '"';
+            }
+        }
+        csvstring += "\n";
+    }
+    console.log(csvstring);
+    /*var w = window.open('','csvWindow');
+    //w.document.open("text/csv");
+    w.document.writw('<meta name="content-type" content="text/csv">');
+    w.document.write('<meta name="content-disposition" content="attachment;  filename=data.csv">');
+    w.document.write(csvstring); 
+    //w.document.close();
+    //navigator.msSaveBlob(blob, "live-summary.csv");*/
+    var a = document.createElement('a');
+    a.href     = 'data:attachment/csv,' + encodeURIComponent(csvstring);
+    a.target   = '_blank';
+    a.download = 'live-summary-'+ local_time_as_file_name() +'.csv';
+    document.body.appendChild(a);
+    a.click(); 
+}
 
 function loadSummary(did, divn) {
     $('#summaryStatus').html('<img src="/static/images/ajax_loader_blue_350.gif" height="10px" width="10px"/>');
@@ -79,10 +110,11 @@ function loadSummary(did, divn) {
             //summaryTable.fnDestroy();
             if(data['status'] == 'ok'){
                 records = data['summary'];
-
+                csvData = [['S No','ID', 'Name','Address','Power','Ignition','GPS Signal','Fuel','Mileage','Time']]
                 for(var i=0; i<records.length; i++)
                 {
                     var row = [];
+                    var csvRow = []
                     if(records[i]['packet'] == null){
                       row = [
                                 records[i]['name'],
@@ -92,6 +124,18 @@ function loadSummary(did, divn) {
                                 '',
                                 ''
                             ];
+                        csvRow = [
+                                    i+1,
+                                    records[i]['imei'],
+                                    records[i]['name'],
+                                    'N/A',
+                                    'N/A',
+                                    'N/A',
+                                    'N/A',
+                                    'N/A',
+                                    'N/A',
+                                    'N/A'
+                                ];
                     }else{
                       //data is available
                         row = [ 
@@ -104,7 +148,21 @@ function loadSummary(did, divn) {
                                 records[i]['packet']['mileage'],
                                 getFormattedDateLocal(records[i]['time'])
                             ];
+                        csvRow = [
+                                    i+1,
+                                    records[i]['imei'],
+                                    records[i]['name'],
+                                    records[i]['packet']['address'],
+                                    get_power_text(records[i]['packet']['ps']),
+                                    get_ig_text(records[i]['packet']['ig']),
+                                    get_gps_text(records[i]['packet']['signal']),
+                                    records[i]['packet']['fuel'],
+                                    records[i]['packet']['mileage'],
+                                    getFormattedDateLocal(records[i]['time'])
+                                ];
+
                    }
+                   csvData.push(csvRow);
                    $('#summaryTable').dataTable().fnAddData(row);
                 }
 

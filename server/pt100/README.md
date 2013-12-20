@@ -5,7 +5,7 @@ This is a very basic implementation of the TK103 pprotocol, to collect the GPS d
 altough much more optimization is pending.
 
 this code is based on the https://github.com/durian/tk102-server
-#Squence diagram of Client-Server Dialogue
+#Flow diagram of the Work of the server is
 1. TK103 TCP server starts listening on a specified HOST and PORT.
 2. TK103 client  connects to the server and sends the Enrollment/Login/Registration Packet.
     the communication can be graphically shown as:

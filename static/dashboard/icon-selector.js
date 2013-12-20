@@ -31,3 +31,38 @@ function get_gps_icon(state){
             return 'unknown';
     }
 }
+
+
+
+function get_ig_text(state){
+    switch(state){
+        case true:
+            return 'On';
+        case false:
+            return 'Off';
+        default:
+            return 'unknown';
+    }
+}
+
+function get_power_text(state){
+    switch(state){
+        case true:
+            return 'Off';
+        case false:
+            return 'On';
+        default:
+            return 'unknown';
+    }
+}
+
+function get_gps_text(state){
+    switch(state){
+        case 'A':
+            return 'Working'
+        case 'V':
+            return 'Not Working'
+        default:
+            return 'unknown';
+    }
+}

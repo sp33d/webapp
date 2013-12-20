@@ -7100,6 +7100,21 @@ function getFormattedDateUTC(tms){
     return dstr;
 }
 
+function local_time_as_file_name(){
+    var dtobj = new Date();
+    var dstr;
+    var tz = (new Date()).toString().substring((new Date()).toString().lastIndexOf(" "), (new Date()).toString().length).trim();
+
+    dstr = dtobj.getFullYear() + 
+        '-' + (dtobj.getMonth() < 9 ? '0'+ (dtobj.getMonth()+1) : (dtobj.getMonth()+1) ) + 
+        '-' + (dtobj.getDate() < 10 ? '0'+dtobj.getDate() : dtobj.getDate() )  + 
+        '-' + (dtobj.getHours() < 10 ? '0'+dtobj.getHours() : dtobj.getHours() ) +
+        '.' + (dtobj.getMinutes() < 10 ? '0'+dtobj.getMinutes() : dtobj.getMinutes() ) +
+        '.' + (dtobj.getSeconds() < 10 ? '0'+dtobj.getSeconds() : dtobj.getSeconds() )+ '' + tz.replace(/\(/g , "").replace(/\)/g , "");
+    return dstr;
+}
+
+
 /*function getFormattedDateUTC(tms){
     var dtobj = new Date(tms*1000);
     var dstr;

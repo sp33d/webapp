@@ -22,17 +22,16 @@ try:
 except:
     import pickle
 
-#from POSHandler import *
 from packet import *
 from timer import *
 import conf
 
 logging.basicConfig(level=logging.DEBUG, format='%(asctime)s %(levelname)-8s %(message)s')
 #
-rtfile  = logging.handlers.RotatingFileHandler("./tk103.log",maxBytes=1024*1024*10, backupCount=5)
+rtfile  = logging.handlers.RotatingFileHandler("./pt100.log",maxBytes=1024*1024*10, backupCount=5)
 console = logging.StreamHandler()
 #
-glogger = logging.getLogger('TK103')
+glogger = logging.getLogger('PT100')
 rtformat='%(asctime)s %(levelname)-8s %(message)s'
 rtformatter = logging.Formatter(fmt=rtformat)
 rtfile.setFormatter(rtformatter)
@@ -48,11 +47,11 @@ q = Queue.Queue()
 #
 
 
-class TK103RequestHandler(SocketServer.BaseRequestHandler):
+class PT100RequestHandler(SocketServer.BaseRequestHandler):
 
 
     def __init__(self, request, client_address, server):
-        self.logger = glogger #logging.getLogger('TK103Handler')
+        self.logger = glogger #logging.getLogger('PT100Handler')
         self.logger.debug('New request')
         SocketServer.BaseRequestHandler.__init__(self, request, client_address, server)
         return
@@ -117,7 +116,7 @@ class TK103RequestHandler(SocketServer.BaseRequestHandler):
         self.pid        = str(cur_pid)
         self.imei       = "PID: "+self.pid     #until we get the real one
         self.url        = ""
-        self.ctldir     = "tk103pid_"+self.pid
+        self.ctldir     = "pt100pid_"+self.pid
         self.lastfile   = self.ctldir+"/last"  #touched, for timestamp
         self.cmdfile    = self.ctldir+"/cmd"   #reads a command from this file if it exists
         self.imeifile   = self.ctldir+"/imei"  #contains imei nr
@@ -176,10 +175,9 @@ class TK103RequestHandler(SocketServer.BaseRequestHandler):
                 data = data.rstrip()
                 self.info("line["+str(lc)+"]: ("+data+")")
                 lc += 1
-                print "CMD",data[13:17], "Second Part32:35", data[32:35]
                 # Check if Login/Enrollment Request
-                if data[13:17] == 'BP05' and data[32:35] != 'HSO':
-                    self.imei = data[1:13]
+                if len(data):
+                    self.imei = data.split(";")[1]
                     print "Request for login from, ", self.imei
                     self.logger = glogger
                     self.info("Init: imei "+self.imei)
@@ -192,61 +190,14 @@ class TK103RequestHandler(SocketServer.BaseRequestHandler):
                         self.error("Could not create 'imei' file")
                         self.loop = False
                     #os.utime(last, None)
-                    self.info("Sending the login ACK to %s" % self.imei)
-                    self.send( '(' + self.imei + 'AP05)' )
-                    # 
-                    #for (rex, out_str) in startups:
-                    #    if re.match(rex, self.imei):
-                    #        self.debug('Found startup entry.')
-                    #        cmd = out_str.replace("IMEI", self.imei)
-                    #        self.send(cmd)
-                    #
                     # Breaking the rest of the Data
                     p = Packet()
-                    p.decode_packet(self.imei, 'LOGIN', data[32:])
+                    p.decode_packet(data)
                     appendPackets(p)
 
                     self.last = time.time()
                     self.counter = self.counts
                     self.on_start()
-                #Check for Handshake Packet
-                elif data[13:17] == 'BP05' and data[32:35] == 'HSO':
-                    self.imei = data[1:13]
-                    print "Handshake request recieved from", self.imei
-                    self.info("Sending Handshake ACK to %s" % self.imei)
-                    self.send('(' + self.imei + 'AP01HSO)')
-                    self.last = time.time()
-                    self.counter = self.counts
-                    os.utime(self.lastfile, None)
-                #Check For Alarm Packet
-                elif data[13:17] == 'BO01':
-                    self.imei = data[1:13]
-                    self.alarm_type = data[17]
-                    print "Alarm received from", self.imei
-                    self.info("Sending Alarm ACK to %s" % self.imei)
-                    self.send('(' + self.imei + 'AS01' + self.alarm_type + ')')
-            
-                    # Breaking the rest of the Data
-                    p = Packet()
-                    p.decode_packet(self.imei, 'ALARM:' + self.alarm_type , data[28:])
-                    appendPackets(p)
-
-                    self.last = time.time()
-                    self.counter = self.counts
-                    os.utime(self.lastfile, None)
-                #Check for Normal Packet
-                elif data[13:17] == 'BR00':
-                    self.imei = data[1:13]
-                    print "Received Normal packet from", self.imei
-
-                    # Breaking the rest of the Data
-                    p = Packet()
-                    p.decode_packet(self.imei, 'DNRML' , data[17:])
-                    appendPackets(p)
-
-                    self.last = time.time()
-                    self.counter = self.counts
-                    os.utime(self.lastfile, None)
                 else:
                     print "Fell to undefined case"
                     self.info(data)
@@ -305,7 +256,7 @@ class TK103RequestHandler(SocketServer.BaseRequestHandler):
         self.info( "bytes read="+str(self.bytes_r)+" bytes sent="+str(self.bytes_s)+" points="+str(self.posidx) )
         return SocketServer.BaseRequestHandler.finish(self)
 
-class TK103Server(SocketServer.ThreadingMixIn, SocketServer.TCPServer):
+class PT100Server(SocketServer.ThreadingMixIn, SocketServer.TCPServer):
     timeout             = 10
     daemon_threads      = True
     allow_reuse_address = True
@@ -328,8 +279,6 @@ def on_exit(imei, msg):
     """
     Called when the tread is killed/tracker disappeared.
     """
-    #ph = POSHandler( None )
-    #ph.on_exit(imei, msg)
     return
 
 def appendPackets(p):
@@ -338,13 +287,6 @@ def appendPackets(p):
     #postData(None)
 
 def postData(pckts):
-    """if q.qsize():
-        while q.qsize():
-            print "Removed Packet", q.get()
-    else:
-        print "Queue is empty"
-    #print time.time(), gvars.PACKETS"""
-
     if q.qsize() < 1:
         glogger.info("No packets in waiting queue")
         return None
@@ -352,11 +294,10 @@ def postData(pckts):
     data_to_post = []
     while q.qsize():
         pckt = q.get()
-        data_to_post.append(pckt.get_serialized_object())
+        data_to_post.append(pckt.get_dict_send())
     try:
-        url = conf.POST_TO_URL #"http://198.199.77.126/dashboard/api/"
-        headers = {'content-type': 'application/json'}
-        r = requests.post(url, data=json.dumps(data_to_post), headers=headers, timeout=conf.APP_SERVER_TIMEOUT)
+        url = conf.POST_TO_URL
+        r = requests.post(url, data=json.dumps(data_to_post), timeout=conf.APP_SERVER_TIMEOUT)
         if r.status_code == 200:
             glogger.info(str(q.qsize()) + " Packets posted")
             #Clear the older data
@@ -378,7 +319,7 @@ if __name__ == '__main__':
     # Remove left over directories form last time.
     dirs = os.listdir(".")
     for d in dirs:
-        if d[0:9] == "tk103pid_":
+        if d[0:9] == "pt100pid_":
             glogger.info("RMDIR: "+d)
             td = determine_td(d)
             glogger.info("Time delta: %s", str(datetime.timedelta(seconds=td)))
@@ -386,7 +327,7 @@ if __name__ == '__main__':
 
     PORT     = conf.LPORT
     address  = ('', PORT) 
-    server   = TK103Server(address, TK103RequestHandler)
+    server   = PT100Server(address, PT100RequestHandler)
     ip, port = server.server_address 
 
     t = threading.Thread(target=server.serve_forever)
@@ -394,7 +335,7 @@ if __name__ == '__main__':
     t.start()
     glogger.info('Server loop running in process:'+str(os.getpid()))
 
-    tout = conf.CLIENT_TIMEOUT #tracker timeout, 2x90 seconds
+    tout = conf.CLIENT_TIMEOUT #tracker timeout, in seconds
    
 
     #Start the Timer to Post the data
@@ -405,8 +346,8 @@ if __name__ == '__main__':
         try:
             time.sleep(1)
             dirs = os.listdir(".")
-            for d in dirs: #Loop over our tk103pid_nnn directories
-                if d[0:8] == "tk103pid":
+            for d in dirs: #Loop over our pt100pid_nnn directories
+                if d[0:8] == "pt100pid":
                     if not os.path.exists(d+"/last"): #not live
                         continue 
                     if os.path.exists(d+"/exit"): #was killed/exited
