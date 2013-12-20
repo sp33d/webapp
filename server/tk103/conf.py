@@ -1,7 +1,7 @@
 """
     A TCP port where server should listen.    
 """
-LPORT = 9090
+LPORT = 8080
 
 """
     A HTTP url where data is to be sent.

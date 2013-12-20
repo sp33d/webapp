@@ -310,7 +310,7 @@ def postData(pckts):
         glogger.info(str(q.qsize()) + " Packets post failed due to " + str(err))
         pass
 
-if __name__ == '__main__':
+def setup():
     import socket
     import threading
 
@@ -343,58 +343,59 @@ if __name__ == '__main__':
     tmr = None
     tmr = TimerClass(cf_fun=postData, cf_fun_args=q)
     tmr.start()
-    while True:
-        try:
-            time.sleep(1)
-            dirs = os.listdir(".")
-            for d in dirs: #Loop over our pt100pid_nnn directories
-                if d[0:8] == "pt100pid":
-                    if not os.path.exists(d+"/last"): #not live
-                        continue 
-                    if os.path.exists(d+"/exit"): #was killed/exited
-                        continue
-                    # time between now and last sign of life:
-                    td = int(time.time()-float(os.stat(d+"/last").st_atime))
-                    if (td > 0 and operator.mod(td,91) == 0) or (td > tout):
-                        glogger.debug(d+":"+str(td)) #already 91 seconds without update
-                    if td >= tout+2: #we timed out, consider the tracker dead
-                        # td between imei and last file is running/alive time
-                        # of tracker. Time taken from file's timestamp.
-                        td = determine_td(d)
-                        glogger.info("Tracker gone after: %s", str(datetime.timedelta(seconds=td)))
-                        #
-                        f = open(d+"/last", 'r')
-                        tpid = int(f.readline())
-                        f.close()
-                        # write in info table that tracker died here? imei?
-                        glogger.info("No more data from tracker (%s).", str(tpid))
-                        imei = "invalid"
-                        try:
-                            with open(d+"/imei", "r") as f:
-                                imei = str(f.readline())
-                        except:
-                            glogger.exception("Could not read 'imei' file.")
-                        glogger.debug("Killing: "+str(tpid)+" imei "+str(imei))
-                        try:
-                            os.kill(tpid, signal.SIGTERM)
-                        except:
-                            glogger.error("Could not kill process "+str(tpid)) #probably already gone
-                        # create killed file
-                        try:
-                            fp_killed = open(d+"/exit", 'w')
-                            fp_killed.write(str(tpid))
-                            fp_killed.close()
-                        except:
-                            glogger.exception("Could not create 'exit' file.")
-                        # read nr bytes
-                        try:
-                            with open(d+"/bytes", "r") as f:
-                                (bytes_r, bytes_s) = pickle.load(f)
-                            glogger.info( str(imei)+": bytes read="+str(bytes_r)+" bytes sent="+str(bytes_s))
-                        except:
-                            glogger.exception("Could not read 'bytes' file.")
-                        on_exit(imei, "After "+str(datetime.timedelta(seconds=td))+"\nbytes read="+str(bytes_r)+" bytes sent="+str(bytes_s))
-        except KeyboardInterrupt:
-            if tmr is not None:
-                tmr.stop()
-            sys.exit(0)
+
+def loop():
+    try:
+        time.sleep(1)
+        dirs = os.listdir(".")
+        for d in dirs: #Loop over our pt100pid_nnn directories
+            if d[0:8] == "pt100pid":
+                if not os.path.exists(d+"/last"): #not live
+                    continue 
+                if os.path.exists(d+"/exit"): #was killed/exited
+                    continue
+                # time between now and last sign of life:
+                td = int(time.time()-float(os.stat(d+"/last").st_atime))
+                if (td > 0 and operator.mod(td,91) == 0) or (td > tout):
+                    glogger.debug(d+":"+str(td)) #already 91 seconds without update
+                if td >= tout+2: #we timed out, consider the tracker dead
+                    # td between imei and last file is running/alive time
+                    # of tracker. Time taken from file's timestamp.
+                    td = determine_td(d)
+                    glogger.info("Tracker gone after: %s", str(datetime.timedelta(seconds=td)))
+                    #
+                    f = open(d+"/last", 'r')
+                    tpid = int(f.readline())
+                    f.close()
+                    # write in info table that tracker died here? imei?
+                    glogger.info("No more data from tracker (%s).", str(tpid))
+                    imei = "invalid"
+                    try:
+                        with open(d+"/imei", "r") as f:
+                            imei = str(f.readline())
+                    except:
+                        glogger.exception("Could not read 'imei' file.")
+                    glogger.debug("Killing: "+str(tpid)+" imei "+str(imei))
+                    try:
+                        os.kill(tpid, signal.SIGTERM)
+                    except:
+                        glogger.error("Could not kill process "+str(tpid)) #probably already gone
+                    # create killed file
+                    try:
+                        fp_killed = open(d+"/exit", 'w')
+                        fp_killed.write(str(tpid))
+                        fp_killed.close()
+                    except:
+                        glogger.exception("Could not create 'exit' file.")
+                    # read nr bytes
+                    try:
+                        with open(d+"/bytes", "r") as f:
+                            (bytes_r, bytes_s) = pickle.load(f)
+                        glogger.info( str(imei)+": bytes read="+str(bytes_r)+" bytes sent="+str(bytes_s))
+                    except:
+                        glogger.exception("Could not read 'bytes' file.")
+                    on_exit(imei, "After "+str(datetime.timedelta(seconds=td))+"\nbytes read="+str(bytes_r)+" bytes sent="+str(bytes_s))
+    except KeyboardInterrupt:
+        if tmr is not None:
+            tmr.stop()
+        sys.exit(0)

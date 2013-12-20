@@ -22,16 +22,17 @@ try:
 except:
     import pickle
 
+#from POSHandler import *
 from packet import *
 from timer import *
 import conf
 
 logging.basicConfig(level=logging.DEBUG, format='%(asctime)s %(levelname)-8s %(message)s')
 #
-rtfile  = logging.handlers.RotatingFileHandler("./pt100.log",maxBytes=1024*1024*10, backupCount=5)
+rtfile  = logging.handlers.RotatingFileHandler("./tk103.log",maxBytes=1024*1024*10, backupCount=5)
 console = logging.StreamHandler()
 #
-glogger = logging.getLogger('PT100')
+glogger = logging.getLogger('TK103')
 rtformat='%(asctime)s %(levelname)-8s %(message)s'
 rtformatter = logging.Formatter(fmt=rtformat)
 rtfile.setFormatter(rtformatter)
@@ -47,11 +48,11 @@ q = Queue.Queue()
 #
 
 
-class PT100RequestHandler(SocketServer.BaseRequestHandler):
+class TK103RequestHandler(SocketServer.BaseRequestHandler):
 
 
     def __init__(self, request, client_address, server):
-        self.logger = glogger #logging.getLogger('PT100Handler')
+        self.logger = glogger #logging.getLogger('TK103Handler')
         self.logger.debug('New request')
         SocketServer.BaseRequestHandler.__init__(self, request, client_address, server)
         return
@@ -116,7 +117,7 @@ class PT100RequestHandler(SocketServer.BaseRequestHandler):
         self.pid        = str(cur_pid)
         self.imei       = "PID: "+self.pid     #until we get the real one
         self.url        = ""
-        self.ctldir     = "pt100pid_"+self.pid
+        self.ctldir     = "tk103pid_"+self.pid
         self.lastfile   = self.ctldir+"/last"  #touched, for timestamp
         self.cmdfile    = self.ctldir+"/cmd"   #reads a command from this file if it exists
         self.imeifile   = self.ctldir+"/imei"  #contains imei nr
@@ -175,9 +176,10 @@ class PT100RequestHandler(SocketServer.BaseRequestHandler):
                 data = data.rstrip()
                 self.info("line["+str(lc)+"]: ("+data+")")
                 lc += 1
+                print "CMD",data[13:17], "Second Part32:35", data[32:35]
                 # Check if Login/Enrollment Request
-                if len(data):
-                    self.imei = data.split(";")[1]
+                if data[13:17] == 'BP05' and data[32:35] != 'HSO':
+                    self.imei = data[1:13]
                     print "Request for login from, ", self.imei
                     self.logger = glogger
                     self.info("Init: imei "+self.imei)
@@ -190,15 +192,61 @@ class PT100RequestHandler(SocketServer.BaseRequestHandler):
                         self.error("Could not create 'imei' file")
                         self.loop = False
                     #os.utime(last, None)
+                    self.info("Sending the login ACK to %s" % self.imei)
+                    self.send( '(' + self.imei + 'AP05)' )
+                    # 
+                    #for (rex, out_str) in startups:
+                    #    if re.match(rex, self.imei):
+                    #        self.debug('Found startup entry.')
+                    #        cmd = out_str.replace("IMEI", self.imei)
+                    #        self.send(cmd)
+                    #
                     # Breaking the rest of the Data
                     p = Packet()
-                    p.decode_packet(data)
+                    p.decode_packet(self.imei, 'LOGIN', data[32:])
+                    appendPackets(p)
+
+                    self.last = time.time()
+                    self.counter = self.counts
+                    self.on_start()
+                #Check for Handshake Packet
+                elif data[13:17] == 'BP05' and data[32:35] == 'HSO':
+                    self.imei = data[1:13]
+                    print "Handshake request recieved from", self.imei
+                    self.info("Sending Handshake ACK to %s" % self.imei)
+                    self.send('(' + self.imei + 'AP01HSO)')
+                    self.last = time.time()
+                    self.counter = self.counts
+                    os.utime(self.lastfile, None)
+                #Check For Alarm Packet
+                elif data[13:17] == 'BO01':
+                    self.imei = data[1:13]
+                    self.alarm_type = data[17]
+                    print "Alarm received from", self.imei
+                    self.info("Sending Alarm ACK to %s" % self.imei)
+                    self.send('(' + self.imei + 'AS01' + self.alarm_type + ')')
+            
+                    # Breaking the rest of the Data
+                    p = Packet()
+                    p.decode_packet(self.imei, 'ALARM:' + self.alarm_type , data[28:])
                     appendPackets(p)
 
                     self.last = time.time()
                     self.counter = self.counts
                     os.utime(self.lastfile, None)
-                    self.on_start()
+                #Check for Normal Packet
+                elif data[13:17] == 'BR00':
+                    self.imei = data[1:13]
+                    print "Received Normal packet from", self.imei
+
+                    # Breaking the rest of the Data
+                    p = Packet()
+                    p.decode_packet(self.imei, 'DNRML' , data[17:])
+                    appendPackets(p)
+
+                    self.last = time.time()
+                    self.counter = self.counts
+                    os.utime(self.lastfile, None)
                 else:
                     print "Fell to undefined case"
                     self.info(data)
@@ -257,7 +305,7 @@ class PT100RequestHandler(SocketServer.BaseRequestHandler):
         self.info( "bytes read="+str(self.bytes_r)+" bytes sent="+str(self.bytes_s)+" points="+str(self.posidx) )
         return SocketServer.BaseRequestHandler.finish(self)
 
-class PT100Server(SocketServer.ThreadingMixIn, SocketServer.TCPServer):
+class TK103Server(SocketServer.ThreadingMixIn, SocketServer.TCPServer):
     timeout             = 10
     daemon_threads      = True
     allow_reuse_address = True
@@ -280,6 +328,8 @@ def on_exit(imei, msg):
     """
     Called when the tread is killed/tracker disappeared.
     """
+    #ph = POSHandler( None )
+    #ph.on_exit(imei, msg)
     return
 
 def appendPackets(p):
@@ -288,6 +338,13 @@ def appendPackets(p):
     #postData(None)
 
 def postData(pckts):
+    """if q.qsize():
+        while q.qsize():
+            print "Removed Packet", q.get()
+    else:
+        print "Queue is empty"
+    #print time.time(), gvars.PACKETS"""
+
     if q.qsize() < 1:
         glogger.info("No packets in waiting queue")
         return None
@@ -295,10 +352,11 @@ def postData(pckts):
     data_to_post = []
     while q.qsize():
         pckt = q.get()
-        data_to_post.append(pckt.get_dict_send())
+        data_to_post.append(pckt.get_serialized_object())
     try:
-        url = conf.POST_TO_URL
-        r = requests.post(url, data=json.dumps(data_to_post), timeout=conf.APP_SERVER_TIMEOUT)
+        url = conf.POST_TO_URL #"http://198.199.77.126/dashboard/api/"
+        headers = {'content-type': 'application/json'}
+        r = requests.post(url, data=json.dumps(data_to_post), headers=headers, timeout=conf.APP_SERVER_TIMEOUT)
         if r.status_code == 200:
             glogger.info(str(q.qsize()) + " Packets posted")
             #Clear the older data
@@ -310,7 +368,7 @@ def postData(pckts):
         glogger.info(str(q.qsize()) + " Packets post failed due to " + str(err))
         pass
 
-if __name__ == '__main__':
+def setup():
     import socket
     import threading
 
@@ -320,7 +378,7 @@ if __name__ == '__main__':
     # Remove left over directories form last time.
     dirs = os.listdir(".")
     for d in dirs:
-        if d[0:9] == "pt100pid_":
+        if d[0:9] == "tk103pid_":
             glogger.info("RMDIR: "+d)
             td = determine_td(d)
             glogger.info("Time delta: %s", str(datetime.timedelta(seconds=td)))
@@ -328,7 +386,7 @@ if __name__ == '__main__':
 
     PORT     = conf.LPORT
     address  = ('', PORT) 
-    server   = PT100Server(address, PT100RequestHandler)
+    server   = TK103Server(address, TK103RequestHandler)
     ip, port = server.server_address 
 
     t = threading.Thread(target=server.serve_forever)
@@ -336,65 +394,66 @@ if __name__ == '__main__':
     t.start()
     glogger.info('Server loop running in process:'+str(os.getpid()))
 
-    tout = conf.CLIENT_TIMEOUT #tracker timeout, in seconds
+    tout = conf.CLIENT_TIMEOUT #tracker timeout, 2x90 seconds
    
 
     #Start the Timer to Post the data
     tmr = None
     tmr = TimerClass(cf_fun=postData, cf_fun_args=q)
     tmr.start()
-    while True:
-        try:
-            time.sleep(1)
-            dirs = os.listdir(".")
-            for d in dirs: #Loop over our pt100pid_nnn directories
-                if d[0:8] == "pt100pid":
-                    if not os.path.exists(d+"/last"): #not live
-                        continue 
-                    if os.path.exists(d+"/exit"): #was killed/exited
-                        continue
-                    # time between now and last sign of life:
-                    td = int(time.time()-float(os.stat(d+"/last").st_atime))
-                    if (td > 0 and operator.mod(td,91) == 0) or (td > tout):
-                        glogger.debug(d+":"+str(td)) #already 91 seconds without update
-                    if td >= tout+2: #we timed out, consider the tracker dead
-                        # td between imei and last file is running/alive time
-                        # of tracker. Time taken from file's timestamp.
-                        td = determine_td(d)
-                        glogger.info("Tracker gone after: %s", str(datetime.timedelta(seconds=td)))
-                        #
-                        f = open(d+"/last", 'r')
-                        tpid = int(f.readline())
-                        f.close()
-                        # write in info table that tracker died here? imei?
-                        glogger.info("No more data from tracker (%s).", str(tpid))
-                        imei = "invalid"
-                        try:
-                            with open(d+"/imei", "r") as f:
-                                imei = str(f.readline())
-                        except:
-                            glogger.exception("Could not read 'imei' file.")
-                        glogger.debug("Killing: "+str(tpid)+" imei "+str(imei))
-                        try:
-                            os.kill(tpid, signal.SIGTERM)
-                        except:
-                            glogger.error("Could not kill process "+str(tpid)) #probably already gone
-                        # create killed file
-                        try:
-                            fp_killed = open(d+"/exit", 'w')
-                            fp_killed.write(str(tpid))
-                            fp_killed.close()
-                        except:
-                            glogger.exception("Could not create 'exit' file.")
-                        # read nr bytes
-                        try:
-                            with open(d+"/bytes", "r") as f:
-                                (bytes_r, bytes_s) = pickle.load(f)
-                            glogger.info( str(imei)+": bytes read="+str(bytes_r)+" bytes sent="+str(bytes_s))
-                        except:
-                            glogger.exception("Could not read 'bytes' file.")
-                        on_exit(imei, "After "+str(datetime.timedelta(seconds=td))+"\nbytes read="+str(bytes_r)+" bytes sent="+str(bytes_s))
-        except KeyboardInterrupt:
-            if tmr is not None:
-                tmr.stop()
-            sys.exit(0)
+
+def loop():
+    try:
+        time.sleep(1)
+        dirs = os.listdir(".")
+        for d in dirs: #Loop over our tk103pid_nnn directories
+            if d[0:8] == "tk103pid":
+                if not os.path.exists(d+"/last"): #not live
+                    continue 
+                if os.path.exists(d+"/exit"): #was killed/exited
+                    continue
+                # time between now and last sign of life:
+                td = int(time.time()-float(os.stat(d+"/last").st_atime))
+                if (td > 0 and operator.mod(td,91) == 0) or (td > tout):
+                    glogger.debug(d+":"+str(td)) #already 91 seconds without update
+                if td >= tout+2: #we timed out, consider the tracker dead
+                    # td between imei and last file is running/alive time
+                    # of tracker. Time taken from file's timestamp.
+                    td = determine_td(d)
+                    glogger.info("Tracker gone after: %s", str(datetime.timedelta(seconds=td)))
+                    #
+                    f = open(d+"/last", 'r')
+                    tpid = int(f.readline())
+                    f.close()
+                    # write in info table that tracker died here? imei?
+                    glogger.info("No more data from tracker (%s).", str(tpid))
+                    imei = "invalid"
+                    try:
+                        with open(d+"/imei", "r") as f:
+                            imei = str(f.readline())
+                    except:
+                        glogger.exception("Could not read 'imei' file.")
+                    glogger.debug("Killing: "+str(tpid)+" imei "+str(imei))
+                    try:
+                        os.kill(tpid, signal.SIGTERM)
+                    except:
+                        glogger.error("Could not kill process "+str(tpid)) #probably already gone
+                    # create killed file
+                    try:
+                        fp_killed = open(d+"/exit", 'w')
+                        fp_killed.write(str(tpid))
+                        fp_killed.close()
+                    except:
+                        glogger.exception("Could not create 'exit' file.")
+                    # read nr bytes
+                    try:
+                        with open(d+"/bytes", "r") as f:
+                            (bytes_r, bytes_s) = pickle.load(f)
+                        glogger.info( str(imei)+": bytes read="+str(bytes_r)+" bytes sent="+str(bytes_s))
+                    except:
+                        glogger.exception("Could not read 'bytes' file.")
+                    on_exit(imei, "After "+str(datetime.timedelta(seconds=td))+"\nbytes read="+str(bytes_r)+" bytes sent="+str(bytes_s))
+    except KeyboardInterrupt:
+        if tmr is not None:
+            tmr.stop()
+        sys.exit(0)

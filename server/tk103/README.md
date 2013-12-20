@@ -307,5 +307,14 @@ a special attribute "packet\_type" has been added to identify and differentiate 
 2. <code>LOGIN</code>: Data from a Login/Enrolment request packet.
 3. <code>ALARM:x</code>: Data from a alarm packet, where x after colon(:) represents the respective alarm type as per the TK103 protocol.
 
+#Usage
+1. Configure the settings in conf.py
+2. Start the server as:
+    ./server.py start
+3. Stop the server as:
+    ./server.py stop
+
+Note: To monitor the server activity you may check tk103.log file.
+
 #To do
 1. Handle the other msgs
