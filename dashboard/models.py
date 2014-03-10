@@ -19,7 +19,7 @@ class Customer(MP_Node):
     mobile_no    = models.CharField(max_length=150, blank=True) 
     email_addr   = models.CharField(max_length=128)
     alert_type   = models.CharField(max_length=15,
-                    choices=( ('SMS','SMS'),
+                    choices=( ('SMS','SMS'), 
                          ('EMAIL','Email'),
                          ('AUTO','Auto'),
                          ('BOTH','Both')
@@ -28,7 +28,7 @@ class Customer(MP_Node):
                   ) 
     role     =  models.CharField(max_length=15,
                     choices=(
-                         ('root','Root'), 
+                         ('root','Root'), #pick this from table
                          ('admin','Administrator'),
                          ('dist','Distributor'),
                          ('enduser','End User'),
@@ -108,7 +108,7 @@ class Device(models.Model):
     name        = models.CharField(max_length=32)
     device_type = models.CharField(max_length=32)
     protocol =  models.CharField(max_length=16,
-                    choices=( ('TK103','TK103'),
+                    choices=( ('TK103','TK103'),  #pick this from config file
                              ('CT04', 'CT04'),
                              ('PT300','PT300'),
                     ),
@@ -116,7 +116,7 @@ class Device(models.Model):
                 )
     icon    = models.CharField(max_length=16,
                     choices=(
-                        ('car','Car'),
+                        ('car','Car'),  # we give each icon a number and then place in folder n later select icon from that number and save a number in table say 1...255
                         ('bike','Bike'),
                         ('truck','Truck'),
                         ('tracker', 'Tracker'),
